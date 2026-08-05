@@ -1,15 +1,15 @@
-// src/App.jsx (MODIFICADO)
-//importa las dependencias necesarias
+// src/App.jsx
 import { useState } from "react";
-import { Chat } from "./components/Chat/Chat";
+import { Assistant } from "./assistants/googleai"; // ← Importa tu asistente
+import { Chat } from "./components/Chat/Chat"; //importa el componente chat
 import { Controls } from "./components/Controls/Controls";
 import styles from "./App.module.css";
 
-// URL del backend. En producción, cambiarías localhost por la URL de tu servidor en la nube.
-const API_BACKEND = "http://localhost:3000";
-
-//funcion principal de la aplicacion, aqui se ejecuta todo el codigo
 function App() {
+   // 1. Instancia del asistente (para hablar con la IA)
+  //    - Se crea una vez al cargar la aplicación.
+  //    - Internamente usa el backend para comunicarse con Gemini
+  const assistant = new Assistant(); // ← Instancia del asistente
   // Estado que guarda el historial de mensajes (usuario e IA).
   // Se actualiza cada vez que se envía o recibe un mensaje.
   const [messages, setMessages] = useState([]);
@@ -17,47 +17,35 @@ function App() {
   // Muestra "..." o "El asistente está escribiendo..." mientras espera.
   const [isLoading, setIsLoading] = useState(false);
 
+  //funcion que añade un mensaje al chat, para no borrar todos los mensajes
+  //del chat cada vez que alguien escribe algo, si no que se añada
+  //como en las inteligencias artificiales normales
+  function addMessage(message) {
+    setMessages((prevMessages) => [...prevMessages, message]);
+  }
+
   // Función asíncrona que maneja el envío de un mensaje.
   // `async` permite usar `await` para esperar respuestas de Gemini.
   // Siempre devuelve una Promesa, aunque no se use explícitamente.
   async function handleContentSend(content) {
-    // 1. Agregar mensaje del usuario
-    setMessages((prev) => [...prev, { content, role: "user" }]);
-    
-    // 2. Estado de carga
+    // Agregar mensaje del usuario
+    addMessage({ content, role: "user" });
+
+    // Mostrar estado de carga
     // muestra los ... en el chat en señal de espera
     setIsLoading(true);
-    setMessages((prev) => [...prev, { role: "assistant", content: "..." }]);
+    addMessage({ role: "assistant", content: "..." });
 
     try {
-      // Envía el mensaje del usuario al backend (NO directamente a Gemini).
+      // Llamar al asistente (que internamente llama al backend)
+      // luego este Envía el mensaje del usuario al backend (NO directamente a Gemini).
       // El backend se encarga de llamar a Gemini y devolver la respuesta.
-      const response = await fetch(`${API_BACKEND}/api/chat`, {
-        /*esto es carpinteria, tiene que se post porque se configuro asi en
-         backend\app.js y tiene que ser content-type aplication json*/
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json", // El backend espera JSON
-        },
-        /*importante, envia la peticion REQUEST a el backend puntualmente
-        a la direccion del metodo /api/chat con el contenido del mensaje
-        es decir la pericion del usuario */
-        body: JSON.stringify({ message: content }),
-      });
-
-      // si la respuesta del backend no fue VETE A LA MIERDA NO TE DEVUELVO NADA
-      // no se ejecutara esta linea, pero si no es asi, pues da error
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-      // `await` pausa la ejecución hasta que el backend devuelva la respuesta.
-      // `response.json()` convierte la respuesta en un objeto JavaScript.
-      // Sin `await`, el código seguiría ejecutándose y `data` sería undefined.
-      const data = await response.json();
+      const result = await assistant.chat(content);
 
       // 4. Actualizar mensaje del asistente
       //concatena los mensajes previos (si no se eliminaria la conversacion)
       //con los mensajes nuevos
+      // Reemplazar "..." con la respuesta real
       setMessages((prev) => {
         //mensajes previos
         const newMessages = [...prev];
@@ -65,23 +53,22 @@ function App() {
         const lastIndex = newMessages.length - 1;
         //si el ultimo mensaje fue del assistente (gemini) nos respondio
         if (newMessages[lastIndex].role === "assistant") {
-          //recupera la respuesta de gemini y la pone en mensajes
+          //pone la respuesta de gemini y la pone en mensajes
           //cerrando el ciclo y obteniendo la respuesta en el chat
-          newMessages[lastIndex].content = data.reply || "Sin respuesta";
+          newMessages[lastIndex].content = result;
         }
         //devuelve el mensaje
         return newMessages;
       });
-
-    }//fin del try 
+    } //fin del try 
     catch (error) {
       //aqui no tiene mucha ciencia, si da error la respuesta lanzara error por el chat
-      console.error("Error al llamar al backend:", error);
+      console.error("Error:", error);
       setMessages((prev) => {
         const newMessages = [...prev];
         const lastIndex = newMessages.length - 1;
         if (newMessages[lastIndex].role === "assistant") {
-          newMessages[lastIndex].content = "Error: No se pudo conectar con el servidor.";
+          newMessages[lastIndex].content = "Sorry, I couldn't process your request. Please try again!";
         }
         return newMessages;
       });
@@ -91,16 +78,25 @@ function App() {
     }
   }
 
+  // 6. Renderizado de la interfaz
   return (
     <div className={styles.App}>
+      {/* Encabezado de la aplicación */}
       <header className={styles.Header}>
-        <img className={styles.Logo} src="/chat-bot.png" alt="chat bot LMAO" />
+        <img className={styles.Logo} src="/chat-bot.png" alt="AI Chatbot" />
         <h2 className={styles.Title}>AI Chatbot</h2>
       </header>
+
+      {/* Contenedor del chat */}
       <div className={styles.ChatContainer}>
+        {/* Renderiza la lista de mensajes */}
         <Chat messages={messages} />
+
+        {/* Indicador de carga (se muestra solo si isLoading es true) */}
         {isLoading && <p className={styles.Loading}>El asistente está escribiendo...</p>}
       </div>
+
+      {/* Controles (input + botón enviar) */}
       <Controls onSend={handleContentSend} disabled={isLoading} />
     </div>
   );
