@@ -108,4 +108,42 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
+// backend/app.js
+
+// ... (código existente) ...
+
+// Ruta para OpenAI
+app.post('/api/chat-openai', async (req, res) => {
+    try {
+      const { message } = req.body;
+  
+      if (!message || message.trim() === '') {
+        return res.status(400).json({ error: 'El mensaje es obligatorio.' });
+      }
+  
+      console.log('📩 Mensaje recibido para OpenAI:', message);
+  
+      // Importar OpenAI SDK
+      const OpenAI = require('openai');
+      const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY, // ← Guarda tu API Key en .env
+      });
+  
+      const response = await openai.responses.create({
+        model: "gpt-4o-mini", // o "gpt-4-turbo", "gpt-3.5-turbo"
+        input: message,
+      });
+  
+      console.log('🤖 Respuesta de OpenAI obtenida.');
+      res.json({ reply: response.output_text });
+  
+    } catch (error) {
+      console.error('🔥 Error en OpenAI:', error);
+      res.status(500).json({
+        error: 'Error al procesar la solicitud',
+        details: error.message
+      });
+    }
+  });
+
 module.exports = app;
