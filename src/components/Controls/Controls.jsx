@@ -26,12 +26,13 @@ export function Controls({ onSend }) {
     return (
         <div className={styles.Controls}>
             <div className={styles.TextAreaContainer}>
-                <textarea 
-                    className={styles.Textarea} 
+                <textarea
+                    className={styles.TextArea} 
                     placeholder="Message AI Chatbot" 
                     value={content}
                     onChange={handleContentChange}
                     onKeyDown={handleEnterPress}
+                    rows={2}
                 >
                 </textarea>
             </div>

@@ -1,6 +1,12 @@
 // src/App.jsx
 import { useState } from "react";
-import { Assistant } from "./assistants/googleai"; // ← Importa tu asistente
+
+// ← Importa tu asistente
+  import { Assistant } from "./assistants/googleai"; 
+// ← OpenAI, se usa el alias Assistant para no modificar el codigo
+// import { OpenAIAssistant as Assistant } from "./assistants/openai"; 
+
+import Loader from './components/Loader/Loader'
 import { Chat } from "./components/Chat/Chat"; //importa el componente chat
 import { Controls } from "./components/Controls/Controls";
 import styles from "./App.module.css";
@@ -93,6 +99,7 @@ function App() {
         <Chat messages={messages} />
 
         {/* Indicador de carga (se muestra solo si isLoading es true) */}
+        {isLoading && <Loader />}
         {isLoading && <p className={styles.Loading}>El asistente está escribiendo...</p>}
       </div>
 
