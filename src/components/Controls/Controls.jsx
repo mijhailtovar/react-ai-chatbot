@@ -1,3 +1,7 @@
+// esto permite a un texarea o contenedor ser autodimensionable
+// es el efecto de deepseek cuando metes mucho texto el input crece automaticamente
+import TextareaAutosize from 'react-textarea-autosize';
+
 import { useState } from "react";
 import styles from "./Controls.module.css";
 
@@ -26,15 +30,16 @@ export function Controls({ onSend }) {
     return (
         <div className={styles.Controls}>
             <div className={styles.TextAreaContainer}>
-                <textarea
+                <TextareaAutosize 
                     className={styles.TextArea} 
                     placeholder="Message AI Chatbot" 
                     value={content}
                     onChange={handleContentChange}
                     onKeyDown={handleEnterPress}
-                    rows={2}
+                    minRows={1}
+                    maxRows={10}
                 >
-                </textarea>
+                </TextareaAutosize>
             </div>
             <button className={styles.Button} onClick={handleContentSend}> 
                 <SendIcon/>
