@@ -2,7 +2,7 @@
 import { useState } from "react";
 
 // ← Importa tu asistente
-  import { Assistant } from "./assistants/googleai"; 
+import { Assistant } from "./assistants/googleai"; 
 // ← OpenAI, se usa el alias Assistant para no modificar el codigo
 // import { OpenAIAssistant as Assistant } from "./assistants/openai"; 
 
@@ -100,7 +100,6 @@ function App() {
 
         {/* Indicador de carga (se muestra solo si isLoading es true) */}
         {isLoading && <Loader />}
-        {isLoading && <p className={styles.Loading}>El asistente está escribiendo...</p>}
       </div>
 
       {/* Controles (input + botón enviar) */}

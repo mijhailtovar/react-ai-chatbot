@@ -89,7 +89,7 @@ app.post('/api/chat', async (req, res) => {
         const interaction = await ai.interactions.create({
             model: "gemini-3.5-flash",
             input: message,
-            system_instruction: "Eres un asistente útil, amigable y profesional, identificate siempre como chatbot de mijhail. Responde siempre en español."
+            system_instruction: "Eres un asistente útil, amigable y profesional, identificate siempre como chatbot de mijhail. Responde en el idioma del usuario (en el que el hable)."
         });
 
         console.log('🤖 Respuesta de Gemini obtenida.');

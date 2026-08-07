@@ -24,3 +24,29 @@
 .Message[data-role="assistant"] {
     align-self: flex-start;  /* ← opcional: alinea a la izquierda */
 }
+
+
+/* src/components/Chat/Chat.module.css */
+
+/* Estilos para el contenido Markdown */
+.Message p {
+    margin: 0 0 0.5rem 0;
+  }
+  
+  .Message ul, .Message ol {
+    margin: 0 0 0.5rem 1.5rem;
+  }
+  
+  .Message code {
+    background: #f0f0f0;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+  
+  .Message pre {
+    background: #f0f0f0;
+    padding: 0.5rem;
+    border-radius: 8px;
+    overflow-x: auto;
+  }
