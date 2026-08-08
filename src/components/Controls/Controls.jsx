@@ -5,7 +5,7 @@ import TextareaAutosize from 'react-textarea-autosize';
 import { useState } from "react";
 import styles from "./Controls.module.css";
 
-export function Controls({ onSend }) {
+export function Controls({ is_disable = false ,onSend }) {
     const [content, setContent] = useState("");
 
     function handleContentChange(event) {
@@ -32,6 +32,7 @@ export function Controls({ onSend }) {
             <div className={styles.TextAreaContainer}>
                 <TextareaAutosize 
                     className={styles.TextArea} 
+                    disabled={is_disable}
                     placeholder="Message AI Chatbot" 
                     value={content}
                     onChange={handleContentChange}
@@ -41,7 +42,7 @@ export function Controls({ onSend }) {
                 >
                 </TextareaAutosize>
             </div>
-            <button className={styles.Button} onClick={handleContentSend}> 
+            <button className={styles.Button} disabled={is_disable} onClick={handleContentSend}> 
                 <SendIcon/>
             </button>
         </div>

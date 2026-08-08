@@ -27,3 +27,8 @@
   border-radius: 42px;
   padding: 10px 0px 10px 10px;
 }
+
+.TextArea:disabled,
+.Button:disabled {
+  opacity: 0.35;
+}

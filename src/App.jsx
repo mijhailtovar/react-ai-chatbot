@@ -103,7 +103,7 @@ function App() {
       </div>
 
       {/* Controles (input + botón enviar) */}
-      <Controls onSend={handleContentSend} disabled={isLoading} />
+      <Controls is_disable={isLoading} onSend={handleContentSend}/>
     </div>
   );
 }
