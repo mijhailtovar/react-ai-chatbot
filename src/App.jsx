@@ -5,6 +5,8 @@
 // Este archivo contiene TODA la estructura visual, sin componentes separados.
 // ============================================================
 
+import TextareaAutosize from 'react-textarea-autosize';
+
 function App() {
   return (
     // ============================================================
@@ -80,7 +82,7 @@ function App() {
         <div className="flex-1 overflow-y-auto py-4 space-y-3">
           
           {/* --- Mensaje del asistente --- */}
-          <div className="flex items-start gap-2">
+          <div className="flex items-end gap-2">
             {/* Avatar del asistente */}
             <div 
               // - `w-8 h-8`: Tamaño del avatar (32px).
@@ -109,7 +111,7 @@ function App() {
               <p 
                 // - `text-sm`: Tamaño base en móviles.
                 // - `md:text-base`: En tabletas se hace más grande.
-                className="text-sm md:text-base"
+                className="text-sm md:text-base lg:text-xl"
               >
                 Hola, ¿cómo puedo ayudarte hoy?
               </p>
@@ -133,7 +135,7 @@ function App() {
               // - `px-4 py-2`: Padding interno.
               className="max-w-[85%] md:max-w-[75%] bg-blue-600 rounded-2xl px-4 py-2"
             >
-              <p className="text-sm md:text-base">Quiero aprender sobre IA</p>
+              <p className="text-sm md:text-base lg:text-xl">Quiero aprender sobre IA</p>
             </div>
 
             {/* Avatar del usuario */}
@@ -158,10 +160,12 @@ function App() {
           <div 
             // - `flex`: Contenedor flexible.
             // - `gap-2`: Espacio de 8px entre el input y el botón.
-            className="flex gap-2"
+            className="flex items-end gap-2 border border-gray-700 rounded-xl bg-gray-800"
           >
             {/* Input de texto */}
-            <input
+            <TextareaAutosize
+              minRows={1}
+              maxRows={12}
               type="text"
               placeholder="Escribe un mensaje..."
               // - `flex-1`: Ocupa todo el espacio disponible.
@@ -176,17 +180,18 @@ function App() {
               // - `focus:ring-6`: Anillo de 6px al enfocar.
               // - `focus:ring-blue-500`: Color del anillo.
               // - `text-sm md:text-base`: Tamaño responsivo.
-              className="flex-1 px-4 py-2 rounded-xl bg-gray-800 border border-gray-700 
+              className="flex-1 px-4 py-2 rounded-xl bg-transparent
                         text-gray-100 placeholder-gray-400
                         focus:outline-none focus:ring focus:ring-offset-2 
                         focus:ring-blue-600 focus:ring-opacity-90 active:bg-blue-900
-                        text-sm md:text-base"
-            />
+                        text-sm md:text-md lg:text-xl md:text-base resize-none min-h-12 font-semibold"
+            >
+              </TextareaAutosize>
 
             {/* ============================================================
                 BOTÓN ENVIAR
                 ============================================================
-                - `px-4 py-2`: Padding.
+                - w-16 h-12 ancho y altura fijo
                 - `bg-blue-600`: Fondo azul.
                 - `hover:bg-blue-400`: Al pasar el mouse, se aclara a azul medio.
                 - `rounded-full`: Borde completamente redondo.
@@ -195,13 +200,14 @@ function App() {
                 - `flex items-center justify-center`: Centra el ícono dentro.
                 - `disabled:opacity-50`: Cuando está deshabilitado, opacidad 50%.
                 - `disabled:cursor-not-allowed`: Cursor de "no permitido".
+                flex-shrink-0 Evita que el botón se encoja cuando el textarea crece.
                 ============================================================ */}
             <button
-              className="px-4 py-2 border-0 bg-blue-600 hover:bg-blue-400 hover:translate-x-1
+              className="w-16 h-12 border-0 bg-blue-600 hover:bg-blue-400 hover:translate-x-1
                        focus:outline-none focus:ring focus:ring-offset-2 
                        focus:ring-blue-600 active:bg-blue-900 transform rounded-full 
                        transition-colors duration-200 flex items-center justify-center
-                       disabled:opacity-50 disabled:cursor-not-allowed"
+                       disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
             >
               {/* Ícono de enviar (SVG) */}
               <svg 
