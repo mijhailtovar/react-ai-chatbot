@@ -5,9 +5,70 @@
 // Este archivo contiene TODA la estructura visual, sin componentes separados.
 // ============================================================
 
-import TextareaAutosize from 'react-textarea-autosize';
+//dependecias de react
+import { useState } from 'react';
+
+//importamos los componentes
+import { Chat } from './components/chat/Chat';
+import { Controls } from './components/Controls/Controls';  
+import { Loader } from './components/Loader/Loader';
 
 function App() {
+// Estado que guarda el historial de mensajes (usuario e IA).
+  // Se actualiza cada vez que se envía o recibe un mensaje.
+  const [messages, setMessages] = useState([]);
+// Estado que indica si la IA está procesando la respuesta.
+  // Muestra "..." o "El asistente está escribiendo..." mientras espera.
+  const [isLoading, setIsLoading] = useState(false);
+
+/**
+ * funcion para guardar un mensaje nuevo 
+ * y actualizar el array de mensajes de arriba
+ */
+const manejarMensajeNuevo = async function(new_message){
+  setMessages((prevMessages) => {//inicio de prevmessages
+    //retorna el nuevo mensaje y lo adjunta al estado anterior de 
+    //set messages (anteriores mensajes para no borrar los otros mensajes cada bez que se inserta uno nuevo)
+    //es decir el prevmessages tiene el estado anterior aqui
+    return [
+      ...prevMessages, //tiene aun el estado anterior
+      {role: 'user', content: new_message}
+    ];
+    //aqui ya se actualizo
+    //fin de setmessages
+  });
+
+  //activa el loader
+  setIsLoading(true);
+
+  try {
+      // 3. Simular llamada al backend (aquí irá tu fetch real)
+      // Reemplaza esto con tu llamada real a Gemini
+      const response = await new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({ reply: '¡Hola! Soy Gemini. ¿Cómo puedo ayudarte?' });
+        }, 1500);
+      });
+
+      // 4. Añadir la respuesta del asistente
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: response.reply },
+      ]);
+  } catch (error) {
+      console.error('Error al enviar mensaje:', error);
+      // Manejar errores (mostrar mensaje de error en el chat)
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: 'Lo siento, hubo un error. Inténtalo de nuevo.' },
+      ]);
+  } finally {
+       // 5. Desactivar el Loader (siempre se ejecuta)
+       setIsLoading(false);
+  }
+
+}
+
   return (
     // ============================================================
     // CONTENEDOR PRINCIPAL
@@ -71,158 +132,18 @@ function App() {
           </h1>
         </header>
 
-        {/* ============================================================
-            ÁREA DE CHAT (Mensajes)
-            ============================================================
-            - `flex-1`: Ocupa todo el espacio disponible (empuja el footer abajo).
-            - `overflow-y-auto`: Si hay muchos mensajes, aparece scroll vertical.
-            - `py-4`: Padding vertical de 16px.
-            - `space-y-3`: Espacio de 12px entre cada hijo.
-            ============================================================ */}
-        <div className="flex-1 overflow-y-auto py-4 space-y-3">
-          
-          {/* --- Mensaje del asistente --- */}
-          <div className="flex items-end gap-2">
-            {/* Avatar del asistente */}
-            <div 
-              // - `w-8 h-8`: Tamaño del avatar (32px).
-              // - `rounded-full`: Borde completamente redondo (círculo).
-              // - `bg-yellow-400`: Fondo amarillo.
-              // - `flex items-center justify-center`: Centra la "AI" dentro del círculo.
-              // - `text-sm`: Texto pequeño.
-              // - `font-bold`: Negrita.
-              // - `text-black`: Texto negro para contrastar con el fondo amarillo.
-              className="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center text-sm font-bold text-black"
-            >
-              AI
-            </div>
+        {/* =======ÁREA DE CHAT (Mensajes) declarado como 'COMPONENTE CHAT'  Pasamos los mensajes al componente Chat====================*/}
+        <Chat messages={messages} />
 
-            {/* Burbuja del mensaje */}
-            <div 
-              // - `max-w-[85%]`: Ancho máximo en móviles.
-              // - `lg:max-w-[75%]`: En pantallas grandes se reduce para que no ocupe todo.
-              // - `xl:max-w-full`: En extra grandes puede ocupar más espacio.
-              // - `bg-gray-800`: Fondo gris oscuro.
-              // - `rounded-2xl`: Borde muy redondeado (16px).
-              // - `px-4 py-2`: Padding horizontal y vertical.
-              className="max-w-[85%] lg:max-w-[75%] xl:max-w-full bg-gray-800 rounded-2xl px-4 py-2"
-            >
-              {/* Texto del mensaje */}
-              <p 
-                // - `text-sm`: Tamaño base en móviles.
-                // - `md:text-base`: En tabletas se hace más grande.
-                className="text-sm md:text-base lg:text-xl"
-              >
-                Hola, ¿cómo puedo ayudarte hoy?
-              </p>
-            </div>
-          </div>
-
-          {/* --- Mensaje del usuario --- */}
-          <div 
-            // - `flex`: Contenedor flexible.
-            // - `items-start`: Alinea los hijos al inicio vertical.
-            // - `gap-2`: Espacio de 8px entre el avatar y el mensaje.
-            // - `justify-end`: Alinea el contenedor a la derecha.
-            className="flex items-start gap-2 justify-end"
-          >
-            {/* Burbuja del mensaje del usuario */}
-            <div 
-              // - `max-w-[85%]`: Ancho máximo en móviles.
-              // - `md:max-w-[75%]`: En tabletas se reduce.
-              // - `bg-blue-600`: Fondo azul.
-              // - `rounded-2xl`: Borde muy redondeado.
-              // - `px-4 py-2`: Padding interno.
-              className="max-w-[85%] md:max-w-[75%] bg-blue-600 rounded-2xl px-4 py-2"
-            >
-              <p className="text-sm md:text-base lg:text-xl">Quiero aprender sobre IA</p>
-            </div>
-
-            {/* Avatar del usuario */}
-            <div 
-              // - Misma estructura que el avatar del asistente pero con fondo azul.
-              className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-sm font-bold"
-            >
-              U
-            </div>
-          </div>
-        </div>
+        {/* Loader (se muestra mientras isLoading es true) */}
+        {isLoading && <Loader />}
 
         {/* ============================================================
-            CONTROLES (Input + Botón Enviar)
-            ============================================================
-            - `py-4`: Padding vertical de 16px.
-            - `border-t`: Borde superior.
-            - `border-gray-700`: Color del borde.
+            CONTROLES (Input + Botón Enviar) declarado como componente
+            Pasamos la función para enviar mensajes al componente Controls
             ============================================================ */}
-        <div className="py-4 border-t border-gray-700">
-          {/* Contenedor del input + botón */}
-          <div 
-            // - `flex`: Contenedor flexible.
-            // - `gap-2`: Espacio de 8px entre el input y el botón.
-            className="flex items-end gap-2 border border-gray-700 rounded-xl bg-gray-800"
-          >
-            {/* Input de texto */}
-            <TextareaAutosize
-              minRows={1}
-              maxRows={12}
-              type="text"
-              placeholder="Escribe un mensaje..."
-              // - `flex-1`: Ocupa todo el espacio disponible.
-              // - `px-4 py-2`: Padding interno.
-              // - `rounded-xl`: Borde redondeado (12px).
-              // - `bg-gray-800`: Fondo gris oscuro.
-              // - `border`: Borde de 1px.
-              // - `border-gray-700`: Color del borde.
-              // - `text-gray-100`: Texto claro.
-              // - `placeholder-gray-400`: Color del placeholder.
-              // - `focus:outline-none`: Elimina el contorno al enfocar.
-              // - `focus:ring-6`: Anillo de 6px al enfocar.
-              // - `focus:ring-blue-500`: Color del anillo.
-              // - `text-sm md:text-base`: Tamaño responsivo.
-              className="flex-1 px-4 py-2 rounded-xl bg-transparent
-                        text-gray-100 placeholder-gray-400
-                        focus:outline-none focus:ring focus:ring-offset-2 
-                        focus:ring-blue-600 focus:ring-opacity-90 active:bg-blue-900
-                        text-sm md:text-md lg:text-xl md:text-base resize-none min-h-12 font-semibold"
-            >
-              </TextareaAutosize>
+        <Controls onSend={manejarMensajeNuevo}/>
 
-            {/* ============================================================
-                BOTÓN ENVIAR
-                ============================================================
-                - w-16 h-12 ancho y altura fijo
-                - `bg-blue-600`: Fondo azul.
-                - `hover:bg-blue-400`: Al pasar el mouse, se aclara a azul medio.
-                - `rounded-full`: Borde completamente redondo.
-                - `transition-colors`: Transición suave de colores.
-                - `duration-200`: Duración de 200ms.
-                - `flex items-center justify-center`: Centra el ícono dentro.
-                - `disabled:opacity-50`: Cuando está deshabilitado, opacidad 50%.
-                - `disabled:cursor-not-allowed`: Cursor de "no permitido".
-                flex-shrink-0 Evita que el botón se encoja cuando el textarea crece.
-                ============================================================ */}
-            <button
-              className="w-16 h-12 border-0 bg-blue-600 hover:bg-blue-400 hover:translate-x-1
-                       focus:outline-none focus:ring focus:ring-offset-2 
-                       focus:ring-blue-600 active:bg-blue-900 transform rounded-full 
-                       transition-colors duration-200 flex items-center justify-center
-                       disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-            >
-              {/* Ícono de enviar (SVG) */}
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                height="24px" 
-                viewBox="0 -960 960 960" 
-                width="24px" 
-                fill="currentColor"
-              >
-                {/* El `path` es un código de dibujo que forma el ícono de "enviar" */}
-                <path d="M120-160v-240l320-80-320-80v-240l760 320-760 320Z"/>
-              </svg>
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
