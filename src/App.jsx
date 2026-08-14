@@ -8,12 +8,21 @@
 //dependecias de react
 import { useState } from 'react';
 
+// ← Importa tu asistente
+import { Assistant } from "./assistants/googleai"; 
+// ← OpenAI, se usa el alias Assistant para no modificar el codigo
+// import { OpenAIAssistant as Assistant } from "./assistants/openai"; 
+
 //importamos los componentes
 import { Chat } from './components/chat/Chat';
 import { Controls } from './components/Controls/Controls';  
 import { Loader } from './components/Loader/Loader';
 
 function App() {
+  // 1. Instancia del asistente (para hablar con la IA)
+  //    - Se crea una vez al cargar la aplicación.
+  //    - Internamente usa el backend para comunicarse con Gemini
+  const assistant = new Assistant(); // ← Instancia del asistente
 // Estado que guarda el historial de mensajes (usuario e IA).
   // Se actualiza cada vez que se envía o recibe un mensaje.
   const [messages, setMessages] = useState([]);
@@ -38,30 +47,47 @@ const manejarMensajeNuevo = async function(new_message){
     //fin de setmessages
   });
 
-  //activa el loader
+  // Mostrar estado de carga
+    // muestra los ... en el chat en señal de espera
   setIsLoading(true);
+  setMessages((prev) => {
+    return [
+      ...prev, {role: "assistant", content: "..."}
+    ];
+  });
 
   try {
-      // 3. Simular llamada al backend (aquí irá tu fetch real)
-      // Reemplaza esto con tu llamada real a Gemini
-      const response = await new Promise((resolve) => {
-        setTimeout(() => {
-          resolve({ reply: '¡Hola! Soy Gemini. ¿Cómo puedo ayudarte?' });
-        }, 1500);
-      });
+      // Llamar al asistente (que internamente llama al backend)
+      // luego este Envía el mensaje del usuario al backend (NO directamente a Gemini).
+      // El backend se encarga de llamar a Gemini y devolver la respuesta.
+      const result = await assistant.chat(new_message);
 
-      // 4. Añadir la respuesta del asistente
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: response.reply },
-      ]);
+      // 4. Añadir la respuesta del asistente 
+      setMessages((prev) => {
+        //mensajes previos
+        const mensajes_previos = [...prev];
+        //indice del mensaje anterior
+        const lastIndex = mensajes_previos.length - 1;
+        //si el ultimo mensaje fue del assistente (gemini) nos respondio
+        if (mensajes_previos[lastIndex].role === "assistant") {
+          //pone la respuesta de gemini y la pone en mensajes
+          //cerrando el ciclo y obteniendo la respuesta en el chat
+          mensajes_previos[lastIndex].content = result;
+        }
+        //devuelve el mensaje
+        return mensajes_previos;
+      });
   } catch (error) {
-      console.error('Error al enviar mensaje:', error);
-      // Manejar errores (mostrar mensaje de error en el chat)
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: 'Lo siento, hubo un error. Inténtalo de nuevo.' },
-      ]);
+      //aqui no tiene mucha ciencia, si da error la respuesta lanzara error por el chat
+      console.error("Error:", error);
+      setMessages((prev) => {
+        const mensajes_previos = [...prev];
+        const lastIndex = mensajes_previos.length - 1;
+        if (mensajes_previos[lastIndex].role === "assistant") {
+          mensajes_previos[lastIndex].content = "Sorry, I couldn't process your request. Please try again!";
+        }
+        return new_message;
+      });
   } finally {
        // 5. Desactivar el Loader (siempre se ejecuta)
        setIsLoading(false);

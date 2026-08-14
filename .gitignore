@@ -22,3 +22,72 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# No compartir clave de API de google
+.env.local
+
+# ================================
+# 🔒 ARCHIVOS DE ENTORNO (NUNCA SUBIR)
+# ================================
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+backend/.env
+
+# ================================
+# 📦 DEPENDENCIAS DE NODE
+# ================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ================================
+# 🏗️ ARCHIVOS DE CONSTRUCCIÓN
+# ================================
+dist/
+build/
+.vercel/
+*.tsbuildinfo
+
+# ================================
+# 🖥️ ARCHIVOS DEL SISTEMA OPERATIVO
+# ================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ================================
+# 📝 ARCHIVOS DE EDITORES DE CÓDIGO
+# ================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ================================
+# 🧪 ARCHIVOS DE PRUEBAS Y COBERTURA
+# ================================
+coverage/
+.nyc_output/
+
+# ================================
+# 🗃️ ARCHIVOS DE LOGS
+# ================================
+logs/
+*.log
+
+# ================================
+# 🔄 ARCHIVOS TEMPORALES DE GIT
+# ================================
+*.orig
+*.rej
+
+# ================================
+# ⚙️ ARCHIVOS DE BACKEND (subida de archivos)
+# ================================
+upload/
