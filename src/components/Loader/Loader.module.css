@@ -9,10 +9,14 @@
     content: "";
     position: absolute;
     border-radius: 50px;
-    box-shadow: 0 0 0 3px inset #fff;
+    /* Cada elemento tendrá su propio color */
     animation: l5 2.5s infinite;
   }
+  .loader:before {
+    box-shadow: 0 0 0 3px inset #3b82f6; /* Azul (Tailwind blue-500) */
+  }
   .loader:after {
+    box-shadow: 0 0 0 3px inset #facc15; /* Amarillo (Tailwind yellow-400) */
     animation-delay: -1.25s;
     border-radius: 0;
   }
