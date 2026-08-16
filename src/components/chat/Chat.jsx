@@ -1,7 +1,39 @@
-
+// src/components/Chat/Chat.jsx
+import { useEffect, useRef } from 'react';
+import Markdown from "react-markdown";
+import remarkGfm from 'remark-gfm';
 
 export function Chat(props){
     const messages = props.messages;
+    /**
+     * Crea una referencia (un "marcador") que apunta a un elemento del DOM (en este caso, el final del chat). useRef(null) inicializa la referencia vacía.
+     */
+    const messagesEndRef = useRef(null);
+
+    /**
+     * Ejecuta el código dentro de la función después de cada renderizado, pero solo cuando messages cambia.
+    Analogía: Es como un vigilante que se activa cada vez que la lista de mensajes se actualiza y hace scroll al final
+    useEffect se ejecuta después de que React actualiza el DOM.
+    El array de dependencias [messages] le dice a React: "Solo ejecuta este efecto si messages cambia".
+Nivel avanzado:
+    Si el array de dependencias está vacío [], el efecto se ejecuta una sola vez (al montar el componente).
+    useEffect puede retornar una función de limpieza (cleanup) para evitar memory leaks.
+*/
+    useEffect(() => {
+                /**
+                 *     messagesEndRef.current → Obtiene el elemento DOM (el div al final del chat).
+            ?. → Si current es null (no existe), no hace nada (evita errores).
+            .scrollIntoView() → Desplaza el elemento hacia la vista.
+            { behavior: "smooth" } → Hace que el scroll sea suave (no instantáneo).
+        Analogía: Es como bajar suavemente una cortina para ver la última línea de un texto.
+        Nivel intermedio:
+            ?. (optional chaining) es una forma segura de acceder a propiedades de un objeto que podría ser null o undefined.
+            scrollIntoView es un método nativo del DOM que desplaza el elemento a la vista del usuario.
+        Nivel avanzado:
+            scrollIntoView tiene opciones como behavior: "smooth" (scroll suave) y block: "start" (alinear al inicio o final).
+                */
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
 
     return(
         /**
@@ -89,12 +121,30 @@ export function Chat(props){
                         : 'bg-gray-800'
                     }`}
                 >
-                    {/*por ultimo el contenido del mensaje xd*/}
-                    <p className="text-sm md:text-base lg:text-xl">{msg.content}</p>
+                    {/*por ultimo el contenido del mensaje envuelto en markdown para 
+                    estilisarlo sin el es texto plano Contenedor con la clase de estilo*/}
+                    
+                    <div className="text-sm md:text-base lg:text-xl">
+                        <Markdown
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              a: ({ href, children }) => (
+                                <a href={href} target="_blank" rel="noopener noreferrer">
+                                  {children}
+                                </a>
+                              ),
+                            }}
+                        >
+                            {msg.content}
+                        </Markdown>
+                    </div>
+                    
                 </div>
                 </div>
             ))
         )}
+            {/* Elemento fantasma para auto-scroll */}
+            <div ref={messagesEndRef} />
             {/**fin del contenedor del chat */}
         </div>
     );

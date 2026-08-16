@@ -13,7 +13,9 @@
     "@google/genai": "^2.17.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-textarea-autosize": "^8.5.9"
+    "react-markdown": "^10.1.0",
+    "react-textarea-autosize": "^8.5.9",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
