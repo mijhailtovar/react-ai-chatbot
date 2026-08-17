@@ -4,7 +4,11 @@ import Markdown from "react-markdown";
 import remarkGfm from 'remark-gfm';
 
 export function Chat(props){
+    //lee la propiedad emnsajes
     const messages = props.messages;
+    //lee la variable del tema oscuro-claro
+    const isDark = props.isDark;
+
     /**
      * Crea una referencia (un "marcador") que apunta a un elemento del DOM (en este caso, el final del chat). useRef(null) inicializa la referencia vacía.
      */
@@ -75,7 +79,10 @@ Nivel avanzado:
                 // - `bg-gray-800`: Fondo gris oscuro.
                 // - `rounded-2xl`: Borde muy redondeado (16px).
                 // - `px-4 py-2`: Padding horizontal y vertical.
-                className="max-w-[85%] lg:max-w-[75%] xl:max-w-full bg-gray-800 rounded-2xl px-4 py-2"
+                // - se evalua la expresion isDArk para el tema (oscuro o claro)
+                className={"max-w-[85%] lg:max-w-[75%] xl:max-w-full  rounded-2xl px-4 py-2 "
+                    + `${isDark ? 'bg-gray-800' : 'bg-gray-300'}`
+                }
                 >
                 {/* Texto del mensaje */}
                 <p 
@@ -106,19 +113,22 @@ Nivel avanzado:
                 <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                     msg.role === 'user'
-                        ? 'bg-blue-500 order-2'
+                        ? (isDark ? 'bg-blue-500 order-2' : 'bg-blue-500 order-2 text-white')
                         : 'bg-yellow-400 text-black'
                     }`}
                 >
                     {msg.role === 'user' ? 'U' : 'IA'}
                 </div>
     
-                {/* Mensaje: los mismo para el fondo de los mensajes  */}
+                {/* Mensaje: los mismo para el fondo de los mensajes 
+                    son las burbujas del usuario o ia, se usa el ternario dentro de un ternario isDark
+                    para establecer los estilos en caso de un cambio de tema
+                */}
                 <div
                     className={`max-w-[85%] lg:max-w-[75%] xl:max-w-full rounded-2xl px-4 py-2 ${
                     msg.role === 'user'
-                        ? 'bg-blue-600'
-                        : 'bg-gray-800'
+                        ? (isDark ? 'bg-blue-600 text-white' : 'bg-blue-200 text-black') 
+                        : (isDark ? 'bg-gray-800' : 'bg-gray-200')
                     }`}
                 >
                     {/*por ultimo el contenido del mensaje envuelto en markdown para 

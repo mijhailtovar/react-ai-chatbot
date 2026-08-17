@@ -5,6 +5,14 @@ import { useState } from 'react';
 export function Controls(props){
     //recupera la funcion manejarMensajeNuevo de los props, que vienen del app.jsx
     const onSend = props.onSend;
+    //lee la variable del tema oscuro-claro
+    const isDark = props.isDark;
+
+    //estilos del textareaautozice, por alguna razon da error si se aplica directamente el condicional
+    // dentro de ese textarea
+    const text_area_autosize_styles = "flex-1 px-4 py-2 rounded-xl bg-transparent focus:outline-none focus:ring focus:ring-offset-2 focus:ring-opacity-90 " + `${isDark ? 'text-gray-100 placeholder-gray-400 focus:ring-blue-600 active:bg-blue-900' : 'text-gray-900 placeholder-gray-700 focus:ring-blue-300 active:bg-blue-400'}` + "  text-sm md:text-md lg:text-xl md:text-base resize-none min-h-12 font-semibold "
+
+
     //variable que maneja el contenido del textarea
     const [content, setContent] = useState('');
 
@@ -45,13 +53,16 @@ export function Controls(props){
             - `py-4`: Padding vertical de 16px.
             - `border-t`: Borde superior.
             - `border-gray-700`: Color del borde.
+            RECUERDA isDark es un prop para establecer un condicional de estilos para el cambio de tema
             ============================================================ */
-            <div className="py-4 border-t border-gray-700">
+            <div className={"py-4 border-t  " + `${isDark ? 'border-gray-700' : 'border-gray-500' }`}>
             {/* Contenedor del input + botón */}
             <div 
               // - `flex`: Contenedor flexible.
               // - `gap-2`: Espacio de 8px entre el input y el botón.
-              className="flex items-end gap-2 border border-gray-700 rounded-xl bg-gray-800"
+              className={"flex items-end gap-2 border rounded-xl  "
+                + `${isDark ? 'border-gray-700 bg-gray-800' : 'border-2 border-cyan-900 bg-blue-200'}`
+              }
             >
               {/* Input de texto */}
               <TextareaAutosize
@@ -71,11 +82,7 @@ export function Controls(props){
                 // - `focus:ring-6`: Anillo de 6px al enfocar.
                 // - `focus:ring-blue-500`: Color del anillo.
                 // - `text-sm md:text-base`: Tamaño responsivo.
-                className="flex-1 px-4 py-2 rounded-xl bg-transparent
-                          text-gray-100 placeholder-gray-400
-                          focus:outline-none focus:ring focus:ring-offset-2 
-                          focus:ring-blue-600 focus:ring-opacity-90 active:bg-blue-900
-                          text-sm md:text-md lg:text-xl md:text-base resize-none min-h-12 font-semibold"
+                className={text_area_autosize_styles}
                 //aqui vienen las variables de las funciones
                 value={content}
                 //llama a una funcion anonima que siempre actualiza el estado
@@ -101,11 +108,15 @@ export function Controls(props){
                   flex-shrink-0 Evita que el botón se encoja cuando el textarea crece.
                   ============================================================ */}
               <button
-                className="w-16 h-12 border-0 bg-blue-600 hover:bg-blue-400 hover:translate-x-1
-                         focus:outline-none focus:ring focus:ring-offset-2 
-                         focus:ring-blue-600 active:bg-blue-900 transform rounded-full 
-                         transition-colors duration-200 flex items-center justify-center
-                         disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                className={"w-16 h-12 border-0  transition-all duration-300 hover:-translate-x-1 hover:shadow-lg"
+                        + " focus:outline-none focus:ring focus:ring-offset-2" 
+                        + "   transform rounded-full" 
+                        + " transition-colors flex items-center justify-center"
+                        + " disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                        + `${isDark 
+                              ? 'bg-blue-600 hover:bg-blue-400 focus:ring-blue-600 active:bg-blue-900 ' 
+                              : 'bg-blue-100 hover:bg-blue-300 focus:ring-blue-400 active:bg-blue-500 '
+                            }`}
                 //si se cliquea el boton no se comprueba la tecla, se actualiza
                 //los mensajes directamente
                 onClick={handleSend}

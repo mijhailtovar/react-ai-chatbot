@@ -17,6 +17,12 @@ import { Assistant } from "./assistants/googleai";
 import { Chat } from './components/chat/Chat';
 import { Controls } from './components/Controls/Controls';  
 import { Loader } from './components/Loader/Loader';
+//IMPORTANTE COMPONENTE PARA CAMBIAR DE TEMA O MEJOR DICHO
+//dependencias para cambio de tema
+import { useContext } from 'react';
+import { ThemeContext } from './context/ThemeContext';
+import ThemeToggle from './components/ThemeToggle/ThemeToggle';
+
 
 function App() {
   // 1. Instancia del asistente (para hablar con la IA)
@@ -29,6 +35,9 @@ function App() {
 // Estado que indica si la IA está procesando la respuesta.
   // Muestra "..." o "El asistente está escribiendo..." mientras espera.
   const [isLoading, setIsLoading] = useState(false);
+  //establece la variable bandera para establcer el tema, si es true es oscuro si no es claro
+  const { isDark } = useContext(ThemeContext);
+
 
 /**
  * funcion para guardar un mensaje nuevo 
@@ -102,9 +111,9 @@ const manejarMensajeNuevo = async function(new_message){
     // - `min-h-screen`: Altura mínima = 100% de la pantalla.
     // - `bg-gray-900`: Fondo gris muy oscuro (casi negro).
     // - `text-gray-100`: Texto gris muy claro (casi blanco).
-    // - `dark`: Activa el modo oscuro (para usar `dark:` en hijos).
+    // - `dark:`: Activa el modo oscuro .
     // ============================================================
-    <div className="min-h-screen bg-gray-900 text-gray-100 dark">
+    <div className={"min-h-screen " + `${isDark ? 'bg-gray-900 text-gray-100' : ' bg-gray-50 text-gray-900 '}`}>
       
       {/* ============================================================
           CONTENEDOR INTERNO (Ancho máximo y centrado)
@@ -130,36 +139,50 @@ const manejarMensajeNuevo = async function(new_message){
             - `border-b`: Solo borde inferior.
             - `border-gray-700`: Color del borde.
             ============================================================ */}
-        <header className="flex items-center justify-center gap-3 py-4 border-b border-gray-700">
+        <header 
+          className={"flex items-center justify-between py-4 border-b "
+            + `${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'}`
+          }
+        
+        >
+
+          {/* 🔹 Espacio vacío a la izquierda (para equilibrar) */}
+          <div className="w-12 md:w-16 xl:w-20"></div>
+
+          {/* 🔹 Logo + Título (centrado) */}
+          <div className="flex items-center justify-center gap-3">
+            {/* Logo del chatbot */}
+            <img 
+              src="/chat-bot.png" 
+              alt="Chatbot IA" 
+              // - `w-12 h-12`: Tamaño en móviles (48px).
+              // - `md:w-16 md:h-16`: En tabletas (≥768px) crece a 64px.
+              // - `xl:w-20 xl:h-20`: En pantallas extra grandes (≥1280px) crece a 80px.
+              className="w-12 h-12 md:w-16 md:h-16 xl:w-20 xl:h-20" 
+            />
+            
+            {/* Título con degradado */}
+            <h1 
+              // - `text-2xl`: Tamaño base en móviles.
+              // - `md:text-3xl`: En tabletas crece.
+              // - `xl:text-4xl`: En pantallas extra grandes crece más.
+              // - `font-bold`: Negrita.
+              // - `text-transparent`: Hace el texto transparente.
+              // - `bg-clip-text`: Recorta el fondo solo al texto.
+              // - `bg-gradient-to-r`: Degradado de izquierda a derecha.
+              // - `from-yellow-400 to-blue-500`: Colores del degradado.
+              className="text-2xl md:text-3xl xl:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-blue-500"
+            >
+              AI Chatbot
+            </h1>
+          </div>
           
-          {/* Logo del chatbot */}
-          <img 
-            src="/chat-bot.png" 
-            alt="Chatbot IA" 
-            // - `w-12 h-12`: Tamaño en móviles (48px).
-            // - `md:w-16 md:h-16`: En tabletas (≥768px) crece a 64px.
-            // - `xl:w-20 xl:h-20`: En pantallas extra grandes (≥1280px) crece a 80px.
-            className="w-12 h-12 md:w-16 md:h-16 xl:w-20 xl:h-20" 
-          />
-          
-          {/* Título con degradado */}
-          <h1 
-            // - `text-2xl`: Tamaño base en móviles.
-            // - `md:text-3xl`: En tabletas crece.
-            // - `xl:text-4xl`: En pantallas extra grandes crece más.
-            // - `font-bold`: Negrita.
-            // - `text-transparent`: Hace el texto transparente.
-            // - `bg-clip-text`: Recorta el fondo solo al texto.
-            // - `bg-gradient-to-r`: Degradado de izquierda a derecha.
-            // - `from-yellow-400 to-blue-500`: Colores del degradado.
-            className="text-2xl md:text-3xl xl:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-blue-500"
-          >
-            AI Chatbot
-          </h1>
+          {/**boton para cambiar de tema themetogle */}
+          <ThemeToggle/>
         </header>
 
         {/* =======ÁREA DE CHAT (Mensajes) declarado como 'COMPONENTE CHAT'  Pasamos los mensajes al componente Chat====================*/}
-        <Chat messages={messages} />
+        <Chat messages={messages} isDark={isDark} />
 
         {/* Loader (se muestra mientras isLoading es true) */}
         {isLoading && <Loader />}
@@ -168,8 +191,7 @@ const manejarMensajeNuevo = async function(new_message){
             CONTROLES (Input + Botón Enviar) declarado como componente
             Pasamos la función para enviar mensajes al componente Controls
             ============================================================ */}
-        <Controls onSend={manejarMensajeNuevo}/>
-
+        <Controls onSend={manejarMensajeNuevo} isDark={isDark} />
       </div>
     </div>
   );
