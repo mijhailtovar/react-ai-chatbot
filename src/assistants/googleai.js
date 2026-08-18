@@ -75,4 +75,45 @@ export class Assistant {
       throw error; // ← Relanza el error para que App.jsx lo maneje
     }
   }
+
+  /**
+   * Método que devuelve un generador asíncrono para streaming
+   */
+  // src/assistants/googleai.js
+  async *chatStream(content) {
+    try {
+      const response = await fetch(`${API_BACKEND}/api/chatStream`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: content }),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+  
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let chunkCount = 0;
+  
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          //console.log(`✅ Stream completado en el frontend. Total fragmentos: ${chunkCount}`);
+          break;
+        }
+  
+        const chunk = decoder.decode(value);
+        chunkCount++;
+        //console.log(`📥 Fragmento #${chunkCount}: ${chunk}`);
+        yield chunk;
+      }
+    } catch (error) {
+      console.error('🔥 Error en streaming (frontend):', error);
+      throw error;
+    }
+  }
+
 }

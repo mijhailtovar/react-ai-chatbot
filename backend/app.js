@@ -108,4 +108,59 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
+// backend/app.js
+    app.post('/api/chatStream', async (req, res) => {
+        try {
+        const { message } = req.body;
+    
+        if (!message || message.trim() === '') {
+            return res.status(400).json({ error: 'El mensaje es obligatorio.' });
+        }
+    
+        console.log('📩 Mensaje recibido (stream):', message);
+    
+        const { GoogleGenAI } = require('@google/genai');
+        const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
+    
+        // Configurar cabeceras para streaming
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.setHeader('Transfer-Encoding', 'chunked');
+        res.setHeader('Cache-Control', 'no-cache');
+    
+        const interaction = await ai.interactions.create({
+            model: "gemini-3.5-flash",
+            input: message,
+            system_instruction: "Eres un asistente útil, amigable y profesional. Responde en el idioma del usuario.",
+            stream: true,
+        });
+    
+        let chunkCount = 0;
+    
+        // Iterar sobre los eventos del stream
+        for await (const event of interaction) {
+            // Verificar si el evento tiene el tipo correcto
+            if (event && event.event_type === "step.delta") {
+            // Verificar si el delta tiene texto
+            if (event.delta && event.delta.type === "text") {
+                const textChunk = event.delta.text || '';
+                if (textChunk) {
+                chunkCount++;
+                //console.log(`📤 Fragmento #${chunkCount}: ${textChunk}`);
+                res.write(textChunk);
+                }
+            }
+            }
+        }
+    
+        //console.log(`✅ Stream completado. Total fragmentos: ${chunkCount}`);
+        res.end();
+    
+        } catch (error) {
+        console.error('🔥 Error en streaming (backend):', error);
+        console.error('📝 Detalles:', error.message);
+        // Enviar error como texto plano para que el frontend lo maneje
+        res.status(500).send('Error interno del servidor durante el streaming');
+        }
+    });
+
 module.exports = app;

@@ -37,72 +37,78 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   //establece la variable bandera para establcer el tema, si es true es oscuro si no es claro
   const { isDark } = useContext(ThemeContext);
-
+  // variable para detectar si se esta recibiendo la respuesta por streaming, es decir
+  //palabra por palabra y NO un solo bloque de golpe
+  const [isStreaming, setIsStreaming] = useState(false);
+  /**
+   * esto adjunta palabra por palabra, el mensaje a los mensajes anteriores
+   */
+  function updateLastMessageContent(content) {
+    setMessages((prevMessages) =>
+      prevMessages.map((message, index) =>
+        index === prevMessages.length - 1 // ← ¿Es el último mensaje?
+          ? { ...message, content: `${message.content}${content}` } // ← Sí: añade el fragmento
+          : message // ← No: déjalo igual
+      )
+    );
+  }
 
 /**
  * funcion para guardar un mensaje nuevo 
  * y actualizar el array de mensajes de arriba
  */
-const manejarMensajeNuevo = async function(new_message){
-  setMessages((prevMessages) => {//inicio de prevmessages
-    //retorna el nuevo mensaje y lo adjunta al estado anterior de 
-    //set messages (anteriores mensajes para no borrar los otros mensajes cada bez que se inserta uno nuevo)
-    //es decir el prevmessages tiene el estado anterior aqui
-    return [
-      ...prevMessages, //tiene aun el estado anterior
-      {role: 'user', content: new_message}
-    ];
-    //aqui ya se actualizo
-    //fin de setmessages
-  });
+const manejarMensajeNuevo = async function (new_message) {
+  // 1. Agregar mensaje del usuario
+  setMessages((prevMessages) => [
+    ...prevMessages,
+    { role: "user", content: new_message },
+  ]);
 
-  // Mostrar estado de carga
-    // muestra los ... en el chat en señal de espera
+  // 2. Activar estado de carga
   setIsLoading(true);
-  setMessages((prev) => {
-    return [
-      ...prev, {role: "assistant", content: "..."}
-    ];
-  });
+  setMessages((prev) => [
+    ...prev,
+    { role: "assistant", content: "..." },
+  ]);
 
   try {
-      // Llamar al asistente (que internamente llama al backend)
-      // luego este Envía el mensaje del usuario al backend (NO directamente a Gemini).
-      // El backend se encarga de llamar a Gemini y devolver la respuesta.
-      const result = await assistant.chat(new_message);
+    // 3. Llamar al método de streaming
+    const stream = assistant.chatStream(new_message);
+    //si es el primer fracmento de la respuesta
+    let isFirstChunk = true;
 
-      // 4. Añadir la respuesta del asistente 
-      setMessages((prev) => {
-        //mensajes previos
-        const mensajes_previos = [...prev];
-        //indice del mensaje anterior
-        const lastIndex = mensajes_previos.length - 1;
-        //si el ultimo mensaje fue del assistente (gemini) nos respondio
-        if (mensajes_previos[lastIndex].role === "assistant") {
-          //pone la respuesta de gemini y la pone en mensajes
-          //cerrando el ciclo y obteniendo la respuesta en el chat
-          mensajes_previos[lastIndex].content = result;
-        }
-        //devuelve el mensaje
-        return mensajes_previos;
-      });
+    // 4. Iterar sobre los fragmentos
+    for await (const chunk of stream) {
+      //si el el primer fracmento d ela respuesta, dejara de serlo porque vienen otros
+      if (isFirstChunk) {
+        isFirstChunk = false;
+        setMessages((prev) => [
+          ...prev,
+          { content: "", role: "assistant" },
+        ]);
+        setIsLoading(false);
+        setIsStreaming(true);
+      }
+      //se actualiza el mensaje con el nuevo fracmento
+      updateLastMessageContent(chunk);
+    }
+    setIsStreaming(false);
   } catch (error) {
-      //aqui no tiene mucha ciencia, si da error la respuesta lanzara error por el chat
-      console.error("Error:", error);
-      setMessages((prev) => {
-        const mensajes_previos = [...prev];
-        const lastIndex = mensajes_previos.length - 1;
-        if (mensajes_previos[lastIndex].role === "assistant") {
-          mensajes_previos[lastIndex].content = "Sorry, I couldn't process your request. Please try again!";
-        }
-        return new_message;
-      });
-  } finally {
-       // 5. Desactivar el Loader (siempre se ejecuta)
-       setIsLoading(false);
+    // 5. Manejo de errores
+    console.error("Error en streaming:", error);
+    setMessages((prev) => [
+      ...prev,
+      {
+        content: "Sorry, I couldn't process your request. Please try again!",
+        role: "system",
+      },
+    ]);
+    setIsLoading(false);
+    setIsStreaming(false);
   }
+};
 
-}
+
 
   return (
     // ============================================================
@@ -190,8 +196,9 @@ const manejarMensajeNuevo = async function(new_message){
         {/* ============================================================
             CONTROLES (Input + Botón Enviar) declarado como componente
             Pasamos la función para enviar mensajes al componente Controls
+            ademas para detectar si esta en proceso de streaming o no
             ============================================================ */}
-        <Controls onSend={manejarMensajeNuevo} isDark={isDark} />
+        <Controls onSend={manejarMensajeNuevo} isDark={isDark} isDisabled={isLoading || isStreaming} />
       </div>
     </div>
   );

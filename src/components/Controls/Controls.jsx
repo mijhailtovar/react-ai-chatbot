@@ -7,6 +7,8 @@ export function Controls(props){
     const onSend = props.onSend;
     //lee la variable del tema oscuro-claro
     const isDark = props.isDark;
+    //variable para saber si habilitamos o no los controles
+    const isDisabled = props.isDisabled;
 
     //estilos del textareaautozice, por alguna razon da error si se aplica directamente el condicional
     // dentro de ese textarea
@@ -120,6 +122,9 @@ export function Controls(props){
                 //si se cliquea el boton no se comprueba la tecla, se actualiza
                 //los mensajes directamente
                 onClick={handleSend}
+                //si el prop isDisable dice que lo desabilitemos el boton no funcionara para
+                //enviar datos
+                disabled={isDisabled}
               >
                 {/* Ícono de enviar (SVG) */}
                 <svg 
