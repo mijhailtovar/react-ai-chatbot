@@ -9,7 +9,9 @@
 import { useState } from 'react';
 
 // ← Importa tu asistente
-import { Assistant } from "./assistants/googleai"; 
+//import { Assistant } from "./assistants/googleai"; 
+// Importa el asistente que configuramos para OpenRouter
+import { DeepSeekAssistant } from './assistants/deepseek.js'; // O el nombre que le hayas dado
 // ← OpenAI, se usa el alias Assistant para no modificar el codigo
 // import { OpenAIAssistant as Assistant } from "./assistants/openai"; 
 
@@ -28,8 +30,12 @@ function App() {
   // 1. Instancia del asistente (para hablar con la IA)
   //    - Se crea una vez al cargar la aplicación.
   //    - Internamente usa el backend para comunicarse con Gemini
-  const assistant = new Assistant(); // ← Instancia del asistente
-// Estado que guarda el historial de mensajes (usuario e IA).
+  //const assistant = new Assistant(); // ← Instancia del asistente de google porque lo llamaste asi en el archivo de googleai.js
+
+  // 1. Crea una instancia del asistente (usando OpenRouter)
+  const assistant = new DeepSeekAssistant();
+
+  // Estado que guarda el historial de mensajes (usuario e IA).
   // Se actualiza cada vez que se envía o recibe un mensaje.
   const [messages, setMessages] = useState([]);
 // Estado que indica si la IA está procesando la respuesta.

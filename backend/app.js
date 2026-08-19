@@ -163,8 +163,285 @@ app.post('/api/chat', async (req, res) => {
         }
     });
 
+// ============================================================
+// 🧠 RUTA PARA DEEPSEEK DIRECTO (DOCUMENTACIÓN - NO USAR AHORA)
+// ============================================================
+// // Esta es la ruta que diseñaste para DeepSeek directo.
+// // La mantengo comentada como documentación para cuando puedas pagar.
+/**
+ 
+/**
+ * RUTAS PARA DEEPSEEK
+ */
+// Please install OpenAI SDK first: `npm install openai`
+//se importa el OpenAI para usar deepseek
+//import OpenAI from "openai";
 
-    // backend/app.js
+// backend/app.js
+
+// ============================================================
+// 🧠 RUTA PARA DEEPSEEK (SIN STREAMING)
+// ============================================================
+// Descripción: Recibe un mensaje, lo envía a DeepSeek y devuelve la respuesta completa.
+// Formato: JSON
+// ============================================================
+/*
+
+app.post('/api/chat-deepseek', async (req, res) => {
+  try {
+    // 1. Extraer mensaje del cuerpo de la petición
+    const { message, history = [] } = req.body;
+
+    // 2. Validar que el mensaje no esté vacío
+    if (!message || message.trim() === '') {
+      return res.status(400).json({ error: 'El mensaje es obligatorio.' });
+    }
+
+    console.log('📩 Mensaje recibido para DeepSeek:', message);
+
+    // 3. Importar la SDK de OpenAI (compatible con DeepSeek)
+    const OpenAI = require('openai');
+
+    // 4. Configurar el cliente de DeepSeek
+    const openai = new OpenAI({
+      baseURL: 'https://api.deepseek.com', // ← URL de DeepSeek
+      apiKey: process.env.DEEPSEEK_API_KEY, // ← Tu API Key en .env
+    });
+
+    // 5. Crear la solicitud de chat
+    const completion = await openai.chat.completions.create({
+      model: 'deepseek-v4-pro', // ← Modelo recomendado
+      messages: [
+        { role: 'system', content: 'Eres un asistente útil, amigable y profesional.' },
+        ...history, // ← Historial de la conversación (si se envía)
+        { role: 'user', content: message },
+      ],
+      thinking: { type: 'enabled' }, // ← Habilita el razonamiento avanzado
+      reasoning_effort: 'high', // ← Nivel de razonamiento
+      stream: false, // ← Respuesta completa (sin streaming)
+    });
+
+    // 6. Extraer la respuesta
+    const reply = completion.choices[0].message.content;
+    console.log('🤖 Respuesta de DeepSeek obtenida.');
+
+    // 7. Devolver la respuesta al frontend
+    res.json({ reply });
+
+  } catch (error) {
+    // 8. Manejo de errores
+    console.error('🔥 Error en DeepSeek:', error);
+    console.error('📝 Detalles:', error.message);
+    res.status(500).json({
+      error: 'Error al procesar la solicitud con DeepSeek',
+      details: error.message,
+    });
+  }
+});
+
+// backend/app.js
+
+// ============================================================
+// 🧠 RUTA PARA DEEPSEEK CON STREAMING
+// ============================================================
+// Descripción: Recibe un mensaje, lo envía a DeepSeek y devuelve la respuesta en fragmentos.
+// Formato: text/plain (fragmentos)
+// ============================================================
+app.post('/api/chatStream-deepseek', async (req, res) => {
+  try {
+    // 1. Extraer mensaje del cuerpo de la petición
+    const { message, history = [] } = req.body;
+
+    // 2. Validar que el mensaje no esté vacío
+    if (!message || message.trim() === '') {
+      return res.status(400).json({ error: 'El mensaje es obligatorio.' });
+    }
+
+    console.log('📩 Mensaje recibido para DeepSeek (stream):', message);
+
+    // 3. Importar la SDK de OpenAI (compatible con DeepSeek)
+    const OpenAI = require('openai');
+
+    // 4. Configurar el cliente de DeepSeek
+    const openai = new OpenAI({
+      baseURL: 'https://api.deepseek.com',
+      apiKey: process.env.DEEPSEEK_API_KEY,
+    });
+
+    // 5. Configurar cabeceras para streaming
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Transfer-Encoding', 'chunked');
+    res.setHeader('Cache-Control', 'no-cache');
+
+    // 6. Crear la solicitud de chat con streaming
+    const stream = await openai.chat.completions.create({
+      model: 'deepseek-v4-pro',
+      messages: [
+        { role: 'system', content: 'Eres un asistente útil, amigable y profesional.' },
+        ...history,
+        { role: 'user', content: message },
+      ],
+      thinking: { type: 'enabled' },
+      reasoning_effort: 'high',
+      stream: true, // ← Habilita el streaming
+    });
+
+    let chunkCount = 0;
+
+    // 7. Iterar sobre los fragmentos del stream
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content || '';
+      if (content) {
+        chunkCount++;
+        console.log(`📤 Fragmento #${chunkCount} (DeepSeek): ${content}`);
+        res.write(content); // ← Envía cada fragmento
+      }
+    }
+
+    console.log(`✅ Stream de DeepSeek completado. Total fragmentos: ${chunkCount}`);
+    res.end();
+
+  } catch (error) {
+    // 8. Manejo de errores
+    console.error('🔥 Error en streaming de DeepSeek:', error);
+    console.error('📝 Detalles:', error.message);
+    res.status(500).json({
+      error: 'Error al procesar la solicitud con DeepSeek',
+      details: error.message,
+    });
+  }
+});
+
+// backend/app.js
+
+// ============================================================
+// 🏥 RUTA PARA VERIFICAR EL ESTADO DEL BACKEND
+// ============================================================
+app.get('/api/health-deepseek', function(req, res){
+  res.json({
+    status: 'ok',
+    message: 'Backend de DeepSeek funcionando',
+  });
+});
+
+ */
+// ============================================================
+
+// ============================================================
+// 🌐 RUTA PARA OPENROUTER (ACTIVA - USAR AHORA)
+// ============================================================
+// Descripción: Recibe un mensaje y lo envía a OpenRouter, que a su vez llama a DeepSeek.
+// Usa tu API Key de OpenRouter y un modelo gratuito (con :free).
+// ============================================================
+app.post('/api/chat-openrouter', async (req, res) => {
+  try {
+    const { message, history = [] } = req.body;
+
+    if (!message || message.trim() === '') {
+      return res.status(400).json({ error: 'El mensaje es obligatorio.' });
+    }
+
+    console.log('📩 Mensaje recibido para OpenRouter (DeepSeek):', message);
+
+    // 1. Importar la SDK de OpenAI (compatible con OpenRouter)
+    const OpenAI = require('openai');
+
+    // 2. Configurar el cliente para OpenRouter
+    //    - baseURL: https://openrouter.ai/api/v1
+    //    - apiKey: Tu clave de OpenRouter (en .env)
+    const openai = new OpenAI({
+      baseURL: 'https://openrouter.ai/api/v1',
+      apiKey: process.env.OPENROUTER_API_KEY,
+    });
+
+    // 3. Crear la solicitud de chat con OpenRouter
+    const completion = await openai.chat.completions.create({
+      // 4. Modelo gratuito de DeepSeek a través de OpenRouter
+      model: 'deepseek/deepseek-v4-flash', // ← Sufijo :free para pruebas
+      messages: [
+        { role: 'system', content: 'Eres un asistente útil, amigable y profesional.' },
+        ...history,
+        { role: 'user', content: message },
+      ],
+      // Nota: Los parámetros 'thinking' y 'reasoning_effort' no son compatibles
+      // con la versión gratuita de OpenRouter.
+    });
+
+    const reply = completion.choices[0].message.content;
+    console.log('🤖 Respuesta de OpenRouter (DeepSeek) obtenida.');
+
+    res.json({ reply });
+
+  } catch (error) {
+    console.error('🔥 Error en OpenRouter:', error);
+    console.error('📝 Detalles:', error.message);
+    res.status(500).json({
+      error: 'Error al procesar la solicitud con OpenRouter',
+      details: error.message,
+    });
+  }
+});
+
+// backend/app.js
+
+// ============================================================
+// 🌊 RUTA PARA OPENROUTER CON STREAMING
+// ============================================================
+app.post('/api/chatStream-openrouter', async (req, res) => {
+  try {
+    const { message, history = [] } = req.body;
+
+    if (!message || message.trim() === '') {
+      return res.status(400).json({ error: 'El mensaje es obligatorio.' });
+    }
+
+    console.log('📩 Mensaje recibido para OpenRouter (stream):', message);
+
+    const OpenAI = require('openai');
+
+    const openai = new OpenAI({
+      baseURL: 'https://openrouter.ai/api/v1',
+      apiKey: process.env.OPENROUTER_API_KEY,
+    });
+
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Transfer-Encoding', 'chunked');
+    res.setHeader('Cache-Control', 'no-cache');
+
+    const stream = await openai.chat.completions.create({
+      model: 'deepseek/deepseek-v4-flash',
+      messages: [
+        { role: 'system', content: 'Eres un asistente útil, amigable y profesional.' },
+        ...history,
+        { role: 'user', content: message },
+      ],
+      stream: true,
+    });
+
+    let chunkCount = 0;
+
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content || '';
+      if (content) {
+        chunkCount++;
+        console.log(`📤 Fragmento #${chunkCount} (OpenRouter): ${content}`);
+        res.write(content);
+      }
+    }
+
+    console.log(`✅ Stream de OpenRouter completado. Total fragmentos: ${chunkCount}`);
+    res.end();
+
+  } catch (error) {
+    console.error('🔥 Error en streaming de OpenRouter:', error);
+    console.error('📝 Detalles:', error.message);
+    res.status(500).json({
+      error: 'Error al procesar la solicitud con OpenRouter',
+      details: error.message,
+    });
+  }
+});
+
 
 // Ruta para OpenAI (sin streaming)
 app.post('/api/chat-openai', async (req, res) => {
