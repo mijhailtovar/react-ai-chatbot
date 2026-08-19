@@ -163,4 +163,84 @@ app.post('/api/chat', async (req, res) => {
         }
     });
 
+
+    // backend/app.js
+
+// Ruta para OpenAI (sin streaming)
+app.post('/api/chat-openai', async (req, res) => {
+    try {
+      const { message, history = [] } = req.body;
+  
+      if (!message || message.trim() === '') {
+        return res.status(400).json({ error: 'El mensaje es obligatorio.' });
+      }
+  
+      console.log('📩 Mensaje recibido para OpenAI:', message);
+  
+      const OpenAI = require('openai');
+      const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
+  
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [...history, { content: message, role: "user" }],
+      });
+  
+      const reply = response.choices[0].message.content;
+      console.log('🤖 Respuesta de OpenAI obtenida.');
+      res.json({ reply });
+  
+    } catch (error) {
+      console.error('🔥 Error en OpenAI:', error);
+      res.status(500).json({ error: 'Error al procesar la solicitud' });
+    }
+  });
+  
+  // Ruta para OpenAI con streaming
+  app.post('/api/chatStream-openai', async (req, res) => {
+    try {
+      const { message, history = [] } = req.body;
+  
+      if (!message || message.trim() === '') {
+        return res.status(400).json({ error: 'El mensaje es obligatorio.' });
+      }
+  
+      console.log('📩 Mensaje recibido para OpenAI (stream):', message);
+  
+      const OpenAI = require('openai');
+      const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
+  
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.setHeader('Transfer-Encoding', 'chunked');
+      res.setHeader('Cache-Control', 'no-cache');
+  
+      const stream = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [...history, { content: message, role: "user" }],
+        stream: true,
+      });
+  
+      let chunkCount = 0;
+  
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content || '';
+        if (content) {
+          chunkCount++;
+          console.log(`📤 Fragmento #${chunkCount} (OpenAI): ${content}`);
+          res.write(content);
+        }
+      }
+  
+      console.log(`✅ Stream de OpenAI completado. Total fragmentos: ${chunkCount}`);
+      res.end();
+  
+    } catch (error) {
+      console.error('🔥 Error en streaming de OpenAI:', error);
+      res.status(500).json({ error: 'Error al procesar la solicitud' });
+    }
+  });
+
 module.exports = app;
