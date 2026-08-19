@@ -5,14 +5,14 @@ export const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
     //si lo quieres testear
-    const [isDark, setIsDark] = useState(false); // Empezamos en oscuro (true) o light (false)
+    //const [isDark, setIsDark] = useState(false); // Empezamos en oscuro (true) o light (false)
+  //console.log(isDark);
   // 1. Cargar el tema guardado (o usar 'light' por defecto)
-  console.log(isDark);
-  /*
+
   const [isDark, setIsDark] = useState(() => {
     return localStorage.getItem('theme') === 'dark';
   });
-*/
+
   // 2. Guardar el tema cada vez que cambie
   useEffect(() => {
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
