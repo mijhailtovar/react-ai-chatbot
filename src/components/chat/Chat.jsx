@@ -122,13 +122,15 @@ Nivel avanzado:
     
                 {/* Mensaje: los mismo para el fondo de los mensajes 
                     son las burbujas del usuario o ia, se usa el ternario dentro de un ternario isDark
-                    para establecer los estilos en caso de un cambio de tema
+                    para establecer los estilos en caso de un cambio de tema, y si es un error 'system' mostrara fondo rojo con la ternaria
+                        : (msg.role === 'assistant' ? (isDark ? 'bg-gray-800' : 'bg-gray-200') : ('bg-red-400 text-white') )
+                    evalua primero si el mensaje es del assistente (ia) si lo es pone los estio si no es de system y es un error
                 */}
                 <div
                     className={`max-w-[85%] lg:max-w-[75%] xl:max-w-full rounded-2xl px-4 py-2 ${
                     msg.role === 'user'
                         ? (isDark ? 'bg-blue-600 text-white' : 'bg-blue-200 text-black') 
-                        : (isDark ? 'bg-gray-800' : 'bg-gray-200')
+                        : (msg.role === 'assistant' ? (isDark ? 'bg-gray-800' : 'bg-gray-200') : ('bg-red-400 text-white') )
                     }`}
                 >
                     {/*por ultimo el contenido del mensaje envuelto en markdown para 

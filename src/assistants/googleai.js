@@ -72,7 +72,7 @@ export class Assistant {
       return data.reply; // ← La respuesta de Gemini desde tu backend
     } 
     catch (error) {
-      throw error; // ← Relanza el error para que App.jsx lo maneje
+      throw this.#parseError(error); //relanza el error
     }
   }
 
@@ -111,8 +111,23 @@ export class Assistant {
         yield chunk;
       }
     } catch (error) {
-      console.error('🔥 Error en streaming (frontend):', error);
-      throw error;
+      throw this.#parseError(error);
+    }
+  }
+
+  //metodo para mostrar los errores de gemini
+  #parseError(error) {
+    try {
+      // Extract and parse the outer error JSON from the message string
+      const [, outerErrorJSON] = error?.message?.split(" . ");
+      const outerErrorObject = JSON.parse(outerErrorJSON);
+
+      // Parse the nested stringified JSON from the outer error
+      const innerErrorObject = JSON.parse(outerErrorObject?.error?.message);
+
+      return innerErrorObject?.error;
+    } catch (parseError) {
+      return error;
     }
   }
 

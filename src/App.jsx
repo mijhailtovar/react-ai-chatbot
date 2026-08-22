@@ -9,9 +9,9 @@
 import { useState } from 'react';
 
 // ← Importa tu asistente
-//import { Assistant } from "./assistants/googleai"; 
+  import { Assistant } from "./assistants/googleai"; 
 // Importa el asistente que configuramos para OpenRouter
-import { DeepSeekAssistant } from './assistants/deepseek.js'; // O el nombre que le hayas dado
+// import { Assistant } from './assistants/deepseek.js'; // O el nombre que le hayas dado
 // ← OpenAI, se usa el alias Assistant para no modificar el codigo
 // import { OpenAIAssistant as Assistant } from "./assistants/openai"; 
 
@@ -33,7 +33,7 @@ function App() {
   //const assistant = new Assistant(); // ← Instancia del asistente de google porque lo llamaste asi en el archivo de googleai.js
 
   // 1. Crea una instancia del asistente (usando OpenRouter)
-  const assistant = new DeepSeekAssistant();
+  const assistant = new Assistant();
 
   // Estado que guarda el historial de mensajes (usuario e IA).
   // Se actualiza cada vez que se envía o recibe un mensaje.
@@ -88,15 +88,26 @@ const manejarMensajeNuevo = async function (new_message) {
       //si el el primer fracmento d ela respuesta, dejara de serlo porque vienen otros
       if (isFirstChunk) {
         isFirstChunk = false;
-        setMessages((prev) => [
-          ...prev,
-          { content: "", role: "assistant" },
-        ]);
+        
+        // ✅ Reemplaza "..." con el primer fragmento
+        setMessages((prev) => {
+          const newMessages = [...prev];
+          const lastIndex = newMessages.length - 1;
+          console.log(newMessages[lastIndex]);
+          if (newMessages[lastIndex].role === "assistant") {
+            newMessages[lastIndex].content = chunk; // ← Reemplaza "..." con el fragmento
+          }
+          return newMessages;
+        });
+
         setIsLoading(false);
         setIsStreaming(true);
+      }else{
+          // ✅ Para los fragmentos siguientes, añade al mensaje existente
+          updateLastMessageContent(chunk);
       }
       //se actualiza el mensaje con el nuevo fracmento
-      updateLastMessageContent(chunk);
+      //updateLastMessageContent(chunk);
     }
     setIsStreaming(false);
   } catch (error) {
@@ -104,8 +115,9 @@ const manejarMensajeNuevo = async function (new_message) {
     console.error("Error en streaming:", error);
     setMessages((prev) => [
       ...prev,
-      {
-        content: "Sorry, I couldn't process your request. Please try again!",
+      { //si el codigo de error existe lo muestra, si no el mensaje por defecto
+        content: error?.message ??
+               "Sorry, I couldn't process your request. Please try again!",
         role: "system",
       },
     ]);

@@ -4,9 +4,9 @@
 const API_BACKEND = "http://localhost:3000";
 
 // ============================================================
-// 📦 CLASE DeepSeekAssistant (USANDO OPENROUTER)
+// 📦 CLASE DeepSeekAssistant (se llama assistant para poder cambiar facilmente en app.jsx) (USANDO OPENROUTER)
 // ============================================================
-export class DeepSeekAssistant {
+export class Assistant {
   constructor() {}
 
   async chat(content, history = []) {
