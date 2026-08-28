@@ -21,14 +21,9 @@ const API_BACKEND = "http://localhost:3000"; // ← Ajusta si cambias de puerto
 // ============================================================
 
 export class Assistant {
-  /**
-   * Constructor vacío.
-   * No necesita inicializar nada porque el backend maneja:
-   * - La API Key (protegida en .env)
-   * - El modelo (gemini-3.5-flash)
-   * - El historial de la conversación
-   */
-  constructor() {}
+  constructor(model = "gemini-3.5-flash") {
+    this.model = model; // ← Guarda el modelo
+  }
 
   /**Define un método asíncrono llamado chat que
    * Envía un mensaje al backend y devuelve la respuesta de Gemini.
@@ -53,7 +48,10 @@ export class Assistant {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message: content }),
+        body: JSON.stringify({ 
+          message: content,
+          model: this.model // ← Envía el modelo al backend
+        }),
       });
       // verifica si la respuesta del BACKEND NO FUE EXITOSA
       // response.ok` es `true` si el código de estado HTTP es 2xx (200-299)
@@ -87,7 +85,10 @@ export class Assistant {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message: content }),
+        body: JSON.stringify({ 
+          message: content,
+          model: this.model // ← Envía el modelo al backend
+        }),
       });
   
       if (!response.ok) {

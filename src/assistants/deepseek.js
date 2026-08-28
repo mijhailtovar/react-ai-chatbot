@@ -7,7 +7,9 @@ const API_BACKEND = "http://localhost:3000";
 // 📦 CLASE DeepSeekAssistant (se llama assistant para poder cambiar facilmente en app.jsx) (USANDO OPENROUTER)
 // ============================================================
 export class Assistant {
-  constructor() {}
+  constructor(model = "deepseek-v4-flash") {
+    this.model = model;
+  }
 
   async chat(content, history = []) {
     try {
@@ -17,7 +19,11 @@ export class Assistant {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message: content, history }),
+        body: JSON.stringify({ 
+          message: content,
+          history: [],
+          model: this.model // ← Envía el modelo al backend
+        }),
       });
 
       if (!response.ok) {
@@ -39,7 +45,10 @@ export class Assistant {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message: content, history }),
+        body: JSON.stringify({ 
+          message: content,
+          model: this.model // ← Envía el modelo al backend
+        }),
       });
 
       if (!response.ok) {

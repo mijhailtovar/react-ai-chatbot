@@ -31,14 +31,9 @@ const API_BACKEND = "http://localhost:3000";
 // ============================================================
 
 export class OpenAIAssistant {
-  /**
-   * Constructor vacío.
-   * No necesita inicializar nada porque el backend maneja:
-   * - La API Key (protegida en .env)
-   * - El modelo (gpt-4o-mini o el que esté configurado)
-   * - El historial de la conversación
-   */
-  constructor() {}
+  constructor(model = "gpt-4o-mini") {
+    this.model = model;
+  }
 
   /**
    * Envía un mensaje al backend y devuelve la respuesta de OpenAI (ChatGPT).
@@ -59,7 +54,8 @@ export class OpenAIAssistant {
         // 2. Enviar mensaje y opcionalmente el historial
         body: JSON.stringify({ 
           message: content,
-          history: history, // ← El backend puede usar esto para mantener contexto
+          history,
+          model: this.model // ← Envía el modelo al backend
         }),
       });
 
@@ -98,6 +94,7 @@ export class OpenAIAssistant {
         body: JSON.stringify({ 
           message: content,
           history: history,
+          model: this.model // ← Envía el modelo al backend
         }),
       });
 

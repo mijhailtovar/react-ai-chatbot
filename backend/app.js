@@ -67,13 +67,14 @@ app.get('/api/health', (req, res) => {
  */
 app.post('/api/chat', async (req, res) => {
     try {
-        const { message } = req.body;
+      const { message, model = "gemini-3.5-flash" } = req.body; // ← Extrae el modelo
 
         if (!message || message.trim() === '') {
             return res.status(400).json({ error: 'El mensaje es obligatorio.' });
         }
 
         console.log('📩 Mensaje recibido:', message);
+        //console.log('modelo: ' + model);
 
         const { GoogleGenAI } = require('@google/genai'); // Importas la SDK
 
@@ -87,7 +88,7 @@ app.post('/api/chat', async (req, res) => {
         // ✅ Usamos la misma sintaxis de interactions.create
         // La nueva versión debería ser compatible con este código.
         const interaction = await ai.interactions.create({
-            model: "gemini-3.5-flash",
+            model: model, // ← Usa el modelo recibido
             input: message,
             system_instruction: "Eres un asistente útil, amigable y profesional, identificate siempre como chatbot de mijhail. Responde en el idioma del usuario (en el que el hable)."
         });
@@ -111,13 +112,14 @@ app.post('/api/chat', async (req, res) => {
 // backend/app.js
     app.post('/api/chatStream', async (req, res) => {
         try {
-        const { message } = req.body;
+          const { message, model = "gemini-3.5-flash" } = req.body; // ← Extrae el modelo
     
         if (!message || message.trim() === '') {
             return res.status(400).json({ error: 'El mensaje es obligatorio.' });
         }
     
         console.log('📩 Mensaje recibido (stream):', message);
+        //console.log('modelo: ' + model);
     
         const { GoogleGenAI } = require('@google/genai');
         const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
@@ -128,7 +130,7 @@ app.post('/api/chat', async (req, res) => {
         res.setHeader('Cache-Control', 'no-cache');
     
         const interaction = await ai.interactions.create({
-            model: "gemini-3.5-flash",
+            model: model, // ← Usa el modelo recibido
             input: message,
             system_instruction: "Eres un asistente útil, amigable y profesional. Responde en el idioma del usuario.",
             stream: true,
@@ -335,7 +337,7 @@ app.get('/api/health-deepseek', function(req, res){
 // ============================================================
 app.post('/api/chat-openrouter', async (req, res) => {
   try {
-    const { message, history = [] } = req.body;
+    const { message, history = [], model = "deepseek-v4-flash" } = req.body;
 
     if (!message || message.trim() === '') {
       return res.status(400).json({ error: 'El mensaje es obligatorio.' });
@@ -357,7 +359,7 @@ app.post('/api/chat-openrouter', async (req, res) => {
     // 3. Crear la solicitud de chat con OpenRouter
     const completion = await openai.chat.completions.create({
       // 4. Modelo gratuito de DeepSeek a través de OpenRouter
-      model: 'deepseek/deepseek-v4-flash', // ← Sufijo :free para pruebas
+      model: 'deepseek/' + model,
       messages: [
         { role: 'system', content: 'Eres un asistente útil, amigable y profesional.' },
         ...history,
@@ -389,7 +391,7 @@ app.post('/api/chat-openrouter', async (req, res) => {
 // ============================================================
 app.post('/api/chatStream-openrouter', async (req, res) => {
   try {
-    const { message, history = [] } = req.body;
+    const { message, history = [], model = "deepseek-v4-flash" } = req.body;
 
     if (!message || message.trim() === '') {
       return res.status(400).json({ error: 'El mensaje es obligatorio.' });
@@ -409,7 +411,7 @@ app.post('/api/chatStream-openrouter', async (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
 
     const stream = await openai.chat.completions.create({
-      model: 'deepseek/deepseek-v4-flash',
+      model: 'deepseek/' + model,
       messages: [
         { role: 'system', content: 'Eres un asistente útil, amigable y profesional.' },
         ...history,
@@ -446,7 +448,7 @@ app.post('/api/chatStream-openrouter', async (req, res) => {
 // Ruta para OpenAI (sin streaming)
 app.post('/api/chat-openai', async (req, res) => {
     try {
-      const { message, history = [] } = req.body;
+      const { message, history = [], model = "gpt-4o-mini" } = req.body;
   
       if (!message || message.trim() === '') {
         return res.status(400).json({ error: 'El mensaje es obligatorio.' });
@@ -460,7 +462,7 @@ app.post('/api/chat-openai', async (req, res) => {
       });
   
       const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: model,
         messages: [...history, { content: message, role: "user" }],
       });
   
@@ -477,7 +479,7 @@ app.post('/api/chat-openai', async (req, res) => {
   // Ruta para OpenAI con streaming
   app.post('/api/chatStream-openai', async (req, res) => {
     try {
-      const { message, history = [] } = req.body;
+      const { message, history = [], model = "gpt-4o-mini" } = req.body;
   
       if (!message || message.trim() === '') {
         return res.status(400).json({ error: 'El mensaje es obligatorio.' });
@@ -495,7 +497,7 @@ app.post('/api/chat-openai', async (req, res) => {
       res.setHeader('Cache-Control', 'no-cache');
   
       const stream = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: model,
         messages: [...history, { content: message, role: "user" }],
         stream: true,
       });
