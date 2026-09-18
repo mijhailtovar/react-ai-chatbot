@@ -32,11 +32,11 @@ export default function Chat({ messages }) {
 
     // Variables dinámicas para diferenciar el contenido principal del fondo general
     const chatTheme = colorsheme === 'dark'
-        ? 'bg-slate-900 text-slate-100'
-        : 'bg-white text-slate-800';
+        ? 'bg-slate-900 text-slate-100  scrollbar-thumb-indigo-600 scrollbar-track-slate-800'
+        : 'bg-white text-slate-800 scrollbar-thumb-emerald-500 scrollbar-track-gray-300';
 
     return (
-        <main className={`${chatTheme} h-full overflow-y-auto p-4`}>CONTENIDO PRINCIPAL
+        <main className={`${chatTheme} h-full overflow-y-auto p-4 scrollbar-thin `}>CONTENIDO PRINCIPAL
             {/**Un operador ternario que evalúa una condición y retorna un valor u otro.
                         Estructura: condición ? valor_si_verdadero : valor_si_falso */
                 messages.length === 0 ? (

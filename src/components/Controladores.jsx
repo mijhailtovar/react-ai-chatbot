@@ -27,8 +27,8 @@ export default function Controladores(props){
         : 'bg-slate-100 border-t border-slate-300 text-slate-900';
         
     const inputTheme = colorsheme === 'dark' 
-        ? 'bg-slate-700 text-white border-slate-600 placeholder-slate-400' 
-        : 'bg-white text-slate-900 border-slate-300 placeholder-slate-500';
+        ? 'bg-slate-700 text-white border-slate-600 placeholder-slate-400 scrollbar-thumb-indigo-600 scrollbar-track-slate-800' 
+        : 'bg-white text-slate-900 border-slate-300 placeholder-slate-500 scrollbar-thumb-emerald-500 scrollbar-track-gray-300';
 
     const buttonTheme = colorsheme === 'dark'
         ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
@@ -90,7 +90,7 @@ export default function Controladores(props){
                {/* Input de texto */}
               <TextareaAutosize
                 minRows={1}
-                maxRows={12}
+                maxRows={10}
                 type="text"
                 placeholder="Escribe un mensaje..."
                 // - `flex-1`: Ocupa todo el espacio disponible.

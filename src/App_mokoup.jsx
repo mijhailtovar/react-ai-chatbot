@@ -168,7 +168,7 @@ const App = () => {
           </div>
 
           {/**FOOTER area del controlador, donde esta el input y el boton de enviar */}
-          <div className='h-24 flex-none shrink-0 p-2 border-t mb-4 border-slate-700/30'>
+          <div className='min-h-18 max-h-70 md:max-h-90 flex-none shrink-0 p-2 border-t mb-4 border-slate-700/30'>
             <SelectorAsistente onAsistenteCambiar={manejarCambioAsistente} />
             <Controladores onSend={manejarMensajeNuevo} isDisabled={isLoading || isStreaming} >
             </Controladores>

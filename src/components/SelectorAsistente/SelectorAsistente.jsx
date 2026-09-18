@@ -68,7 +68,7 @@ export function SelectorAsistente({ onAsistenteCambiar }) {
       <select
         value={seleccion}
         onChange={manejarCambio}
-        className={"px-3 py-1 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 " + selectTheme}
+        className={"px-3 py-1 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm lg:text-base " + selectTheme}
       >
         <optgroup label="Google ai" >
           <option value="google:gemini-3.5-flash">Gemini 3.5 Flash</option>
