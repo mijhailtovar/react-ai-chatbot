@@ -3,6 +3,9 @@ import { useState, useEffect } from "react";
 //importa desde el index.js dentro de asistentes todos los asistentes o IAs
 import {GoogleAIAssistant, DeepSeekAssistant, OpenAIAssistant} from "../../assistants/index";
 
+import { useContext } from "react";
+import { ThemeContext } from "../../context/ThemeContext";
+
 // 1. Mapeo de nombres a clases (como un diccionario)
 const mapaAsistentes = {
     google: GoogleAIAssistant,
@@ -41,14 +44,31 @@ export function SelectorAsistente({ onAsistenteCambiar }) {
         setSeleccion(evento.target.value); //Actualiza el estado
     };
 
-    // 5. Renderizado del selector
+    //5. estilos de cambio de tema
+    //variable del contexto
+        const colorsheme = useContext(ThemeContext);
+    
+        // Variables dinámicas para el footer y sus elementos internos
+        const footerTheme = colorsheme === 'dark' 
+            ? 'bg-slate-800 border-t border-slate-700 text-slate-100' 
+            : 'bg-slate-100 border-t border-slate-300 text-slate-900';
+            
+        const inputTheme = colorsheme === 'dark' 
+            ? 'bg-slate-700 text-white border-slate-600 placeholder-slate-400' 
+            : 'bg-white text-slate-900 border-slate-300 placeholder-slate-500';
+    
+        const selectTheme = colorsheme === 'dark'
+            ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
+            : 'bg-emerald-500 hover:bg-emerald-400 text-black ';
+
+    // 6. Renderizado del selector
   return (
-    <div className="flex items-center gap-2 p-3 bg-gray-800 rounded-lg">
-      <span className="text-white font-medium">Elige un asistente:</span>
+    <div className={"flex items-center gap-2 p-3 rounded-lg " + footerTheme}>
+      <span className="font-medium">Elige un asistente:</span>
       <select
         value={seleccion}
         onChange={manejarCambio}
-        className="bg-gray-700 text-white px-3 py-1 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className={"px-3 py-1 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 " + selectTheme}
       >
         <optgroup label="Google ai" >
           <option value="google:gemini-3.5-flash">Gemini 3.5 Flash</option>

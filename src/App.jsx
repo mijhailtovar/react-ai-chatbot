@@ -6,6 +6,7 @@ import { Controls } from './components/Controls/Controls';
 import { Loader } from './components/Loader/Loader';
 import { ThemeContext } from './context/ThemeContext';
 import ThemeToggle from './components/ThemeToggle/ThemeToggle';
+import { Sidebar } from './components/Sidebar/Sidebar';
 
 function App() {
   const [asistente, setAsistente] = useState(null);
@@ -13,6 +14,19 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const { isDark } = useContext(ThemeContext);
+
+  // Estado para controlar si el sidebar está abierto en móvil
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Función para alternar el sidebar
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  // Función para cerrar el sidebar (al hacer clic en un elemento)
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
 
   const updateLastMessageContent = (content) => {
     setMessages((prev) =>
@@ -72,6 +86,7 @@ function App() {
 
   return (
     <div className={`min-h-screen ${isDark ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-900'}`}>
+      
       <div className="max-w-3xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4 h-screen flex flex-col">
         <header className={`flex items-center justify-between py-4 border-b ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'}`}>
           <div className="w-12 md:w-16 xl:w-20"></div>
@@ -84,11 +99,26 @@ function App() {
           <ThemeToggle />
         </header>
 
-        <Chat messages={messages} isDark={isDark} />
-        {isLoading && <Loader />}
+        {/**contenedor del contenido principal */}
+        <div className='flex flex-1 gap-4 w-full overflow-hiddens'>
+          <Sidebar 
+          
+          />
+          {/**semanticamente en html el main es donde se almacena la logica y contenido principal de nuestra aplicacion */}
+          
+          <main className="flex flex-col flex-1 gap-4">
+            <Chat messages={messages} isDark={isDark} />
+            {isLoading && <Loader />}
 
-        <Controls onSend={manejarMensajeNuevo} isDark={isDark} isDisabled={isLoading || isStreaming} />
-        <SelectorAsistente onAsistenteCambiar={manejarCambioAsistente} />
+            <Controls onSend={manejarMensajeNuevo} isDark={isDark} isDisabled={isLoading || isStreaming} />
+            <SelectorAsistente onAsistenteCambiar={manejarCambioAsistente} />
+          </main>
+        </div>
+        
+          
+        
+        
+
       </div>
     </div>
   );
