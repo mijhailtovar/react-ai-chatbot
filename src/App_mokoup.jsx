@@ -132,17 +132,22 @@ const App = () => {
     updateActive(draft => !draft);
   }
 
-  function actualizarChats(messages = []) {
+  function actualizarChats(messages = [], title = undefined) {
     updateChats((draft) => {
       const chat = draft.find((c) => c.id === activeChatId);
       if (chat) {
-        chat.messages = messages;
+        chat.title = chat.title ?? title;
+      chat.messages = messages
       }
+      
     });
   }
 
   function handleChatMessagesUpdate(messages){
-    actualizarChats(messages);
+          //se le añadira un titulo basado en las primeras 7 palabras que intriuscamos
+    const title = messages[0]?.content.split(" ").slice(0, 7).join(" ");
+
+    actualizarChats(messages, title);
   }
 
   function handleNewChatCreate() {
@@ -150,7 +155,7 @@ const App = () => {
 
     updateActiveChatId(id);
     updateChats((draft) => {
-      draft.push({ id, title: "New Chat", messages: [] });
+      draft.push({ id, messages: [] });
     });
   }
 
