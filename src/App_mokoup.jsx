@@ -1,5 +1,7 @@
-import { useState, useCallback, useContext } from 'react';
+import { useState, useCallback, useContext, useMemo } from 'react';
 import { useImmer } from 'use-immer';
+//ids
+import { v4 as uuidv4 } from 'uuid';
 //componentes
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
@@ -13,7 +15,30 @@ import { ThemeContext } from './context/ThemeContext';
 import { SelectorAsistente } from './components/SelectorAsistente/SelectorAsistente';
 
 
-
+const CHATS = [
+  {
+    id: 2,
+    title: "Gemini AI vs ChatGPT",
+    messages: [
+      { role: "user", content: "What is better ChatGPT or Gemini?" },
+      {
+        role: "assistant",
+        content: "Hi! Can you explain for what type of tasks you will use it?",
+      },
+    ],
+  },
+  {
+    id: 4,
+    title: "How to use AI tools in your daily life",
+    messages: [
+      { role: "user", content: "Hey! How to use AI in my life?" },
+      {
+        role: "assistant",
+        content: "Hi! Would you like to use it for work or for hobbies?",
+      },
+    ],
+  },
+];
 
 const App = () => {
   //variable para el cambio de estado, que cambiara el valor por defecto del context
@@ -24,6 +49,14 @@ const App = () => {
   const [messages, updateMessages] = useImmer([]);
   const [isLoading, updateIsLoading] = useImmer(false);
   const [isStreaming, updateIsStreaming] = useImmer(false);
+  //variables para los chats
+  const [chats, updateChats] = useImmer(CHATS);
+  const [activeChatId, updateActiveChatId] = useImmer(2);
+  //se usa useMemo para optimizar, ya que es un calculo pesado recorrer todos los chats
+  const activeChatMessages = useMemo(
+    () => chats.find(({ id }) => id === activeChatId)?.messages ?? [],
+    [chats, activeChatId]
+  );
 
   // Clases dinámicas de Tailwind según el tema activo
   const themeBg = colorsheme === 'dark' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-900';
@@ -91,10 +124,43 @@ const App = () => {
     }
   };
 
-
+  /**
+   * funcion que maneja el estado de activacion del sidebar
+   */
   function handleClickButton() {
     //alert('me clickeaste papy');
     updateActive(draft => !draft);
+  }
+
+  function actualizarChats(messages = []) {
+    updateChats((draft) => {
+      const chat = draft.find((c) => c.id === activeChatId);
+      if (chat) {
+        chat.messages = messages;
+      }
+    });
+  }
+
+  function handleChatMessagesUpdate(messages){
+    actualizarChats(messages);
+  }
+
+  function handleNewChatCreate() {
+    const id = uuidv4();
+
+    updateActiveChatId(id);
+    updateChats((draft) => {
+      draft.push({ id, title: "New Chat", messages: [] });
+    });
+  }
+
+  function handleActiveChatIdChange(id) {
+    updateActiveChatId(id);
+    updateChats(function(draft){
+      //elimina el elemento cuya longitud sea 0, 
+      //lo hace devolviendo solo los elementos cuya longitud sea > 0
+      return draft.filter(({ messages }) => messages.length > 0)
+    });
   }
 
   return (
@@ -155,12 +221,27 @@ const App = () => {
               className={'overflow-y-auto h-full w-[40vw] sm:w-[40vw] md:w-[25vw] lg:w-[20vw] ' +
                 ` transition-all duration-300`}
             >
-              <Sidebar handleClick={handleClickButton}></Sidebar>
+              <Sidebar 
+                handleClick={handleClickButton} 
+                chats={chats} 
+                activeChatId={activeChatId} 
+                activeChatMessages={activeChatMessages}
+                onActiveChatIdChange={handleActiveChatIdChange} 
+                onNewChatCreate={handleNewChatCreate}
+              >
+
+                </Sidebar>
             </div>
 
             {/**contenido principal, el area de los mensajes */}
             <div className='flex-1 h-full flex flex-col overflow-hidden min-h-0 relative'>
-              <Chat messages={messages}>
+              <Chat 
+                messages={messages} 
+                updateMessages={updateMessages} 
+                chatId={activeChatId} 
+                chatMessages={activeChatMessages} 
+                onChatMessagesUpdate={handleChatMessagesUpdate}
+              >
               </Chat>
               {isLoading && <Loader />}
             </div>

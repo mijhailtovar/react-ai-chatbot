@@ -16,10 +16,22 @@ import remarkGfm from 'remark-gfm';
  * @returns -contenido principal, donde se ven los mensajes-
  * 
  */
-export default function Chat({ messages }) {
+export default function Chat({ messages, updateMessages, chatId, chatMessages, onChatMessagesUpdate }) {
     //variable de contexto
     const colorsheme = useContext(ThemeContext);
     const isDark = colorsheme === 'dark';
+
+    //usaremos el efecto para vigilar los cambio en el id del chat seleccionado
+    useEffect(function(){
+        updateMessages(chatMessages);
+    }, [chatId]);
+
+    useEffect(
+        function() {
+            onChatMessagesUpdate(messages);
+        }, 
+        [messages]
+    );
 
     /**
      * Crea una referencia (un "marcador") que apunta a un elemento del DOM (en este caso, el final del chat). useRef(null) inicializa la referencia vacía.
