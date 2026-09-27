@@ -1,59 +1,22 @@
-//============================================================
-// 📁 ARCHIVO: src/assistants/googleai.js
-// ============================================================
-// PROPÓSITO:
-//   Encapsula la lógica de comunicación con la IA (Gemini) en una clase.
-//   Esto permite cambiar de proveedor (OpenAI, Claude, etc.) en el futuro
-//   sin modificar el resto de la aplicación (principio de "separación de responsabilidades").
-// ============================================================
-
-// 🔗 URL del backend (donde corre el servidor Node.js).
-// - En desarrollo: http://localhost:3000
-// - En producción: Cambiar a la URL de tu servidor en la nube (Render, Railway, etc.).
-const API_BACKEND = "http://localhost:3000"; // ← Ajusta si cambias de puerto
-
-// ============================================================
-// 📦 CLASE Assistant
-// ============================================================
-// Encapsula toda la lógica para hablar con la IA a través del backend.
-// - El constructor no recibe parámetros porque el backend ya tiene la API Key.
-// - El método `chat()` envía un mensaje y devuelve la respuesta.
-// ============================================================
+const API_BACKEND = "http://localhost:3000";
 
 export class Assistant {
-  constructor(model = "gemini-3.5-flash") {
-    this.model = model; // ← Guarda el modelo
+  constructor(model = "gemini-2.5-flash") {
+    this.model = model;
   }
 
-  /**Define un método asíncrono llamado chat que
-   * Envía un mensaje al backend y devuelve la respuesta de Gemini.
-   *
-   * @param {string} content - El mensaje del usuario (texto).
-   * @returns {string} - La respuesta generada por Gemini.
-   * @throws {Error} - Si el backend falla o la respuesta no es válida.
-   */
-  async chat(content) {
-    //si ocurre un error con el api de gemini o backend aqui lo detecta
-    try {
-      /**
-       * aqui hace una request, la manda al backend algo
-       * que el interpretara como 'req.body.message'(ver backend) 
-       * y obtendra una response, puntualmente manda message: content
-       * (la peticion del usuario), metodo post, headers json, bady etc
-       * carpinteria lo normal de una request, esto se puede inspeccionar
-       * en la pestaña red del navegador
-       */
-      const response = await fetch(`${API_BACKEND}/api/chat`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ 
-          message: content,
-          model: this.model // ← Envía el modelo al backend
-        }),
-      });
-      // verifica si la respuesta del BACKEND NO FUE EXITOSA
+async chat(content, history = []) {
+  try {
+    const response = await fetch(`${API_BACKEND}/api/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        message: content,
+        history: history,        // ← AÑADIDO: envía el historial
+        model: this.model
+      }),
+    });
+     // verifica si la respuesta del BACKEND NO FUE EXITOSA
       // response.ok` es `true` si el código de estado HTTP es 2xx (200-299)
       // response.status devuelve el numero exacto del error 
       //SI HAY ERRORES LANZA UN ERROR AL FRONTEND
@@ -68,68 +31,44 @@ export class Assistant {
 
       // devuelve la respuesta a App.jsx
       return data.reply; // ← La respuesta de Gemini desde tu backend
-    } 
-    catch (error) {
-      throw this.#parseError(error); //relanza el error
-    }
+  } catch (error) {
+    throw error;
   }
+}
 
-  /**
-   * Método que devuelve un generador asíncrono para streaming
-   */
-  // src/assistants/googleai.js
-  async *chatStream(content) {
-    try {
-      const response = await fetch(`${API_BACKEND}/api/chatStream`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ 
-          message: content,
-          model: this.model // ← Envía el modelo al backend
-        }),
-      });
-  
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+async *chatStream(content, history = []) {
+  try {
+    const response = await fetch(`${API_BACKEND}/api/chatStream`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        message: content,
+        history: history,        // ← AÑADIDO: envía el historial
+        model: this.model
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let chunkCount = 0;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        //console.log(`✅ Stream completado en el frontend. Total fragmentos: ${chunkCount}`);
+        break;
       }
-  
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let chunkCount = 0;
-  
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          //console.log(`✅ Stream completado en el frontend. Total fragmentos: ${chunkCount}`);
-          break;
-        }
-  
-        const chunk = decoder.decode(value);
-        chunkCount++;
-        //console.log(`📥 Fragmento #${chunkCount}: ${chunk}`);
-        yield chunk;
-      }
-    } catch (error) {
-      throw this.#parseError(error);
+
+      const chunk = decoder.decode(value);
+      chunkCount++;
+      //console.log(`📥 Fragmento #${chunkCount}: ${chunk}`);
+      yield chunk;
     }
+  } catch (error) {
+    throw error;
   }
-
-  //metodo para mostrar los errores de gemini
-  #parseError(error) {
-    try {
-      // Extract and parse the outer error JSON from the message string
-      const [, outerErrorJSON] = error?.message?.split(" . ");
-      const outerErrorObject = JSON.parse(outerErrorJSON);
-
-      // Parse the nested stringified JSON from the outer error
-      const innerErrorObject = JSON.parse(outerErrorObject?.error?.message);
-
-      return innerErrorObject?.error;
-    } catch (parseError) {
-      return error;
-    }
-  }
-
+}
 }

@@ -47,6 +47,7 @@ export class Assistant {
         },
         body: JSON.stringify({ 
           message: content,
+          history: history,        // ← AÑADIDO: envía el historial
           model: this.model // ← Envía el modelo al backend
         }),
       });

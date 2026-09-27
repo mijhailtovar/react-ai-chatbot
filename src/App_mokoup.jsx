@@ -1,4 +1,4 @@
-import { useState, useCallback, useContext, useMemo } from 'react';
+import { useState, useCallback, useContext, useEffect, useMemo } from 'react';
 import { useImmer } from 'use-immer';
 //ids
 import { v4 as uuidv4 } from 'uuid';
@@ -46,7 +46,7 @@ const App = () => {
   const [active, updateActive] = useImmer(false);
 
   const [asistente, updateAsistente] = useImmer(null);
-  const [messages, updateMessages] = useImmer([]);
+  //const [messages, updateMessages] = useImmer([]);
   const [isLoading, updateIsLoading] = useImmer(false);
   const [isStreaming, updateIsStreaming] = useImmer(false);
   //variables para los chats
@@ -64,65 +64,95 @@ const App = () => {
     ? 'bg-slate-700 text-white hover:bg-slate-600'
     : 'bg-slate-300 text-slate-800 hover:bg-slate-400';
 
-  const updateLastMessageContent = (content) => {
-    updateMessages((draft) => {
-      const lastMessage = draft[draft.length - 1];
-      if (lastMessage) {
-        lastMessage.content += content;
-      }
-    });
-  };
+  
 
   const manejarCambioAsistente = useCallback((nuevoAsistente) => {
     updateAsistente(nuevoAsistente);
     console.log("✅ Asistente cambiado:", nuevoAsistente.constructor.name);
   }, []);
 
-  const manejarMensajeNuevo = async (new_message) => {
-    //se añade un nuevo mensaje del usuario
-    updateMessages((draft) => {
-      draft.push({ role: "user", content: new_message });
-    });
-    //se establece la bandera de esta cargando a true
-    updateIsLoading(true);
-    // se añade un mensaje nuevo al final del asistente un mensaje de espera
-    updateMessages(function (draft) {
-      draft.push({ role: 'assistant', content: "..." });
-    });
 
-    //inicio del try-catch
-    try {
-      const stream = asistente.chatStream(new_message);
-      let isFirstChunk = true;
 
-      for await (const chunk of stream) {
-        if (isFirstChunk) {
-          isFirstChunk = false;
-          //actualiza los mensajes si el ultimo mensaje fue el del asistente
-          updateMessages((draft) => {
-            const lastIndex = draft.length - 1;
-            if (draft[lastIndex]?.role === "assistant") {
-              draft[lastIndex].content = chunk;
-            }
-          });
-
-          updateIsLoading(false);
-        } else {
-          updateLastMessageContent(chunk);
-        }
-      }
-      updateIsStreaming(false);
-    } catch (error) {
-      console.error("Error en streaming:", error);
-      
-      updateMessages((draft) => {
-        draft.push({role: "system", content: error?.message ?? "Sorry, I couldn't process your request. Please try again!"});
-      });
-
-      updateIsLoading(false);
-      updateIsStreaming(false);
+  // Función auxiliar: actualiza el chat activo
+const updateActiveChatMessages = (updater) => {
+  updateChats((draft) => {
+    const chat = draft.find((c) => c.id === activeChatId);
+    if (chat) {
+      updater(chat.messages);
     }
-  };
+  });
+};
+
+// Actualiza el último mensaje (streaming)
+const updateLastMessageContent = (content) => {
+  updateActiveChatMessages((draft) => {
+    const lastMessage = draft[draft.length - 1];
+    if (lastMessage) {
+      lastMessage.content += content;
+    }
+  });
+};
+
+// Maneja el envío de mensajes
+const manejarMensajeNuevo = async (new_message) => {
+
+  // ✅ Actualizar el título del chat activo si es "Nuevo Chat" o está vacío
+  const chat = chats.find((c) => c.id === activeChatId);
+  if (chat && (chat.title === "Nuevo Chat" || !chat.title)) {
+    // Truncar el mensaje a 40 caracteres
+    const title = new_message.length > 40 
+      ? new_message.slice(0, 40) + "..." 
+      : new_message;
+    updateActiveChatTitle(title);
+  }
+
+  updateActiveChatMessages((draft) => {
+    draft.push({ role: "user", content: new_message });
+  });
+
+  updateIsLoading(true);
+  updateActiveChatMessages((draft) => {
+    draft.push({ role: 'assistant', content: "..." });
+  });
+
+  try {
+    // ✅ Usa el chat directamente de chats (no de activeChatMessages)
+    const chat = chats.find((c) => c.id === activeChatId);
+    const history = (chat?.messages ?? []).filter(
+      ({ role }) => role !== 'system'
+    );
+
+    const stream = asistente.chatStream(new_message, history);
+    let isFirstChunk = true;
+
+    for await (const chunk of stream) {
+      if (isFirstChunk) {
+        isFirstChunk = false;
+        updateActiveChatMessages((draft) => {
+          const lastIndex = draft.length - 1;
+          if (draft[lastIndex]?.role === "assistant") {
+            draft[lastIndex].content = chunk;
+          }
+        });
+        updateIsLoading(false);
+        updateIsStreaming(true);
+      } else {
+        updateLastMessageContent(chunk);
+      }
+    }
+    updateIsStreaming(false);
+  } catch (error) {
+    console.error("Error en streaming:", error);
+    updateActiveChatMessages((draft) => {
+      draft.push({
+        role: "system",
+        content: error?.message ?? "Sorry, I couldn't process your request."
+      });
+    });
+    updateIsLoading(false);
+    updateIsStreaming(false);
+  }
+};
 
   /**
    * funcion que maneja el estado de activacion del sidebar
@@ -152,21 +182,26 @@ const App = () => {
 
   function handleNewChatCreate() {
     const id = uuidv4();
-
-    updateActiveChatId(id);
     updateChats((draft) => {
-      draft.push({ id, messages: [] });
+      draft.push({ id, title: "Nuevo Chat", messages: [] });
     });
+    updateActiveChatId(id);
   }
 
   function handleActiveChatIdChange(id) {
     updateActiveChatId(id);
-    updateChats(function(draft){
-      //elimina el elemento cuya longitud sea 0, 
-      //lo hace devolviendo solo los elementos cuya longitud sea > 0
-      return draft.filter(({ messages }) => messages.length > 0)
-    });
+   
   }
+
+  // Función para actualizar el título del chat activo
+const updateActiveChatTitle = (title) => {
+  updateChats((draft) => {
+    const chat = draft.find((c) => c.id === activeChatId);
+    if (chat) {
+      chat.title = title;
+    }
+  });
+};
 
   return (
     <ThemeContext value={colorsheme}>
@@ -240,15 +275,10 @@ const App = () => {
 
             {/**contenido principal, el area de los mensajes */}
             <div className='flex-1 h-full flex flex-col overflow-hidden min-h-0 relative'>
-              <Chat 
-                messages={messages} 
-                updateMessages={updateMessages} 
-                chatId={activeChatId} 
-                chatMessages={activeChatMessages} 
-                onChatMessagesUpdate={handleChatMessagesUpdate}
-              >
-              </Chat>
+            
+            <Chat messages={activeChatMessages} />
               {isLoading && <Loader />}
+
             </div>
 
           </div>
