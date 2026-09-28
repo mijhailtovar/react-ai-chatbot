@@ -1,4 +1,4 @@
-import { useState, useCallback, useContext, useEffect, useMemo } from 'react';
+import { useState, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 import { useImmer } from 'use-immer';
 //ids
 import { v4 as uuidv4 } from 'uuid';
@@ -15,31 +15,6 @@ import { ThemeContext } from './context/ThemeContext';
 import { SelectorAsistente } from './components/SelectorAsistente/SelectorAsistente';
 
 
-const CHATS = [
-  {
-    id: 2,
-    title: "Gemini AI vs ChatGPT",
-    messages: [
-      { role: "user", content: "What is better ChatGPT or Gemini?" },
-      {
-        role: "assistant",
-        content: "Hi! Can you explain for what type of tasks you will use it?",
-      },
-    ],
-  },
-  {
-    id: 4,
-    title: "How to use AI tools in your daily life",
-    messages: [
-      { role: "user", content: "Hey! How to use AI in my life?" },
-      {
-        role: "assistant",
-        content: "Hi! Would you like to use it for work or for hobbies?",
-      },
-    ],
-  },
-];
-
 const App = () => {
   //variable para el cambio de estado, que cambiara el valor por defecto del context
   const [colorsheme, updateColorsheme] = useImmer('dark');
@@ -50,13 +25,26 @@ const App = () => {
   const [isLoading, updateIsLoading] = useImmer(false);
   const [isStreaming, updateIsStreaming] = useImmer(false);
   //variables para los chats
-  const [chats, updateChats] = useImmer(CHATS);
-  const [activeChatId, updateActiveChatId] = useImmer(2);
+  const [chats, updateChats] = useImmer([]);
+  const [activeChatId, updateActiveChatId] = useImmer();
   //se usa useMemo para optimizar, ya que es un calculo pesado recorrer todos los chats
   const activeChatMessages = useMemo(
     () => chats.find(({ id }) => id === activeChatId)?.messages ?? [],
     [chats, activeChatId]
   );
+
+  /**
+   * se ejecuta una sola vez, en el primer render los [] indican que se ejecuta una sola vez, 
+   * crea un chat por defecto
+   */
+  const hasCreatedInitialChat = useRef(false);
+
+  useEffect(() => {
+    if (!hasCreatedInitialChat.current) {
+      hasCreatedInitialChat.current = true;
+      handleNewChatCreate();
+    }
+  }, []);
 
   // Clases dinámicas de Tailwind según el tema activo
   const themeBg = colorsheme === 'dark' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-900';
@@ -186,6 +174,7 @@ const manejarMensajeNuevo = async (new_message) => {
       draft.push({ id, title: "Nuevo Chat", messages: [] });
     });
     updateActiveChatId(id);
+    console.log("handlenewchatcreate se ejecuto");
   }
 
   function handleActiveChatIdChange(id) {
