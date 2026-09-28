@@ -105,3 +105,64 @@ Si estás viendo esto, espero que te sirva como ejemplo de cómo **construir un 
 - [Documentación de Gemini API](https://ai.google.dev/gemini-api/docs)
 - [Documentación de Express](https://expressjs.com/)
 - [React - Documentación Oficial](https://react.dev/)
+
+# 📚 Explicación de cambios - Versión 2.5.0
+
+## 🔗 Enlace a la conversación completa
+[Explicación de DeepSeek sobre cambios en la versión v2.5.0](https://chat.deepseek.com/share/pi04vgce3e52zr49pf)
+
+## 📋 Resumen de la versión 2.5.0
+
+Esta versión introduce:
+- **Historial por chat:** cada chat tiene su propio `messages`.
+- **Arquitectura unificada:** el estado vive en `chats`, no en `messages`.
+- **`Chat` como componente visual:** solo renderiza, no maneja lógica.
+- **Sidebar mejorado:** muestra todos los chats, incluidos los vacíos.
+- **Título automático:** el título del chat se basa en el primer mensaje.
+
+## 🛠️ Cambios por archivo
+
+### `App.jsx`
+- Eliminado el estado `messages`.
+- Añadidas funciones `updateActiveChatMessages` y `updateActiveChatTitle`.
+- `Chat` recibe `messages={activeChatMessages}`.
+- Eliminado el filtro de chats vacíos en `handleActiveChatIdChange`.
+
+### `Chat.jsx`
+- Eliminado `useState` interno.
+- Eliminada la lógica del asistente y del streaming.
+- Ahora solo recibe `messages` y los renderiza.
+
+### `Sidebar.jsx`
+- Eliminado el `.filter()` que ocultaba chats vacíos.
+- Eliminado el `disabled` del botón "Nuevo Chat".
+
+### `Controladores.jsx`
+- Sin cambios.
+
+## 📖 Conceptos de React utilizados
+
+| Concepto | Uso en el proyecto |
+| :--- | :--- |
+| **Componente** | `App`, `Chat`, `Sidebar`, `Controladores` |
+| **Props** | `Chat` recibe `messages`; `Sidebar` recibe `chats` |
+| **Estado** | `chats`, `activeChatId`, `isLoading`, `isStreaming` |
+| **`useState`** | `Controladores` maneja el `content` del textarea |
+| **`useEffect`** | Auto-scroll en `Chat`; sincronización en `App` |
+| **`useMemo`** | `activeChatMessages` se calcula a partir de `chats` |
+| **`useCallback`** | `manejarCambioAsistente` para no recrear la función |
+| **`useImmer`** | `chats` y `activeChatId` para drafts mutables |
+| **Props drilling** | `Sidebar` recibe props de `App` |
+
+## 🎯 Próximos pasos
+
+- [ ] **Persistencia en localStorage:** guardar `chats` y `activeChatId` en el navegador.
+- [ ] **Título generado por IA:** enviar una petición extra para generar un título corto.
+- [ ] **Eliminar chats:** añadir un botón para borrar chats individuales.
+- [ ] **Renombrar chats:** permitir editar el título manualmente.
+
+## 📎 Enlaces útiles
+
+- [Documentación de React](https://react.dev/)
+- [Documentación de useImmer](https://github.com/immerjs/use-immer)
+- [Documentación de Tailwind CSS](https://tailwindcss.com/docs)
