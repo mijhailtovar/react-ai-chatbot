@@ -19,7 +19,8 @@
 // 🔗 URL del backend (donde corre el servidor Node.js).
 // - En desarrollo: http://localhost:3000
 // - En producción: Cambiar a la URL de tu servidor en la nube (Render, Railway, etc.).
-const API_BACKEND = "http://localhost:3000";
+// 🔗 URL del backend (lee la variable de Vercel o usa localhost para desarrollo local).
+const API_BACKEND = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 // ============================================================
 // 📦 CLASE OpenAIAssistant (VERSIÓN CON BACKEND - RECOMENDADA)
