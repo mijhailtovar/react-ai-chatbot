@@ -54,7 +54,8 @@ export class OpenAIAssistant {
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
-        throw new Error(`Error \({response.status}:\){errData.details || response.statusText}`);
+        // Verifica que tenga el signo '$' antes de cada llave:
+        throw new Error(`Error \(${response.status}:\)${errData.details || response.statusText}`);
       }
 
       const data = await response.json();
