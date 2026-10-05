@@ -166,3 +166,7 @@ Esta versión introduce:
 - [Documentación de React](https://react.dev/)
 - [Documentación de useImmer](https://github.com/immerjs/use-immer)
 - [Documentación de Tailwind CSS](https://tailwindcss.com/docs)
+
+## Licencia y Propiedad Intelectual
+
+© 2026 Mijhail Tovar. Todos los derechos reservados. Este software es un activo propietario protegido por las leyes de derecho de autor. Queda prohibida su alteración o distribución no autorizada.

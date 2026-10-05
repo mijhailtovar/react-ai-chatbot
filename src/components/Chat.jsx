@@ -54,7 +54,7 @@ export default function Chat({ messages = [] }) {
                     : 'bg-red-500 text-white'
               }`}
             >
-              <div className="text-sm md:text-base lg:text-xl">
+              <div className={`text-sm md:text-base lg:text-xl  ${isDark ? 'markdown-content-dark' : 'markdown-content'}`}>
                 <Markdown
                   remarkPlugins={[remarkGfm]}
                   components={{

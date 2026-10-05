@@ -10,7 +10,7 @@ import Controladores from './components/Controladores';
 import { Loader } from './components/Loader/Loader';
 
 // importa el contexto para que envuelva la aplicacion entera
-//de esta manera todos los componentes tienen acceso al value de ThemeContext
+// de esta manera todos los componentes tienen acceso al value de ThemeContext
 import { ThemeContext } from './context/ThemeContext';
 import { SelectorAsistente } from './components/SelectorAsistente/SelectorAsistente';
 

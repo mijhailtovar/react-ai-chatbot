@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2026 Mijhail Tovar. Todos los derechos reservados.
+ * Prohibida su reproducción, distribución o uso sin autorización expresa.
+ */
 // src/App.jsx
 import { useState, useCallback, useContext } from 'react';
 import { SelectorAsistente } from './components/SelectorAsistente/SelectorAsistente';

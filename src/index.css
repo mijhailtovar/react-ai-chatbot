@@ -1,2 +1,64 @@
 @import "tailwindcss";
 
+/* src/index.css */
+/*
+estios globales para el componente chat.jsx en caso de que pidamos codigo a la ia
+*/
+.markdown-content pre {
+    white-space: pre-wrap;
+    padding: 8px;
+    border-radius: 8px;
+    background: #f9f9f9;
+    overflow-x: auto;
+  }
+  
+  .dark .markdown-content pre {
+    background: #171717;
+  }
+  
+  .markdown-content code {
+    background: #e5e5e5;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+  
+  .dark .markdown-content code {
+    background: #333;
+  }
+  
+  .markdown-content pre code {
+    background: none;
+    padding: 0;
+  }
+
+  /*
+    lo mismo de arriba pero para el modo oscuro
+  */
+  .markdown-content-dark pre {
+    white-space: pre-wrap;
+    padding: 8px;
+    border-radius: 8px;
+    background: #0e1c3e;
+    overflow-x: auto;
+  }
+  
+  .dark .markdown-content-dark pre {
+    background: #c7c6c6;
+  }
+  
+  .markdown-content-dark code {
+    background: #1e3a8f;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+  
+  .dark .markdown-content-dark code {
+    background: #cfcfcf;
+  }
+  
+  .markdown-content-dark pre code {
+    background: none;
+    padding: 0;
+  }
