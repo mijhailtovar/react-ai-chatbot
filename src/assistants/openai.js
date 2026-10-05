@@ -23,70 +23,57 @@
 const API_BACKEND = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 // ============================================================
-// 📦 CLASE OpenAIAssistant (VERSIÓN CON BACKEND - RECOMENDADA)
+// 📦 CLASE OpenAIAssistant (ACTUALIZADA PARA OPENROUTER)
 // ============================================================
-// Esta clase usa el backend como puente para proteger la API Key.
-// - El constructor no recibe parámetros.
-// - El método `chat()` envía un mensaje y devuelve la respuesta.
-// - El método `chatStream()` devuelve un generador asíncrono para streaming.
-// ============================================================
-
 export class OpenAIAssistant {
-  constructor(model = "gpt-4o-mini") {
-    this.model = model;
+  constructor(model = "openai/gpt-4o-mini") {
+    // Aseguramos que el modelo lleve el prefijo correcto que exige OpenRouter
+    this.model = model.startsWith("openai/") ? model : `openai/${model}`;
   }
 
   /**
-   * Envía un mensaje al backend y devuelve la respuesta de OpenAI (ChatGPT).
+   * Envía un mensaje al backend y devuelve la respuesta de OpenAI a través de OpenRouter.
    *
    * @param {string} content - El mensaje del usuario (texto).
-   * @param {Array} history - Historial de la conversación (opcional, lo maneja el backend).
-   * @returns {string} - La respuesta generada por OpenAI.
-   * @throws {Error} - Si el backend falla o la respuesta no es válida.
+   * @param {Array} history - Historial de la conversación (opcional).
+   * @returns {string} - La respuesta generada.
    */
   async chat(content, history = []) {
     try {
-      // 1. Enviar petición al backend
       const response = await fetch(`${API_BACKEND}/api/chat-openai`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        // 2. Enviar mensaje y opcionalmente el historial
         body: JSON.stringify({ 
           message: content,
           history,
-          model: this.model // ← Envía el modelo al backend
+          model: this.model // Envía "openai/gpt-4o-mini" al backend
         }),
       });
 
-      // 3. Verificar que la respuesta fue exitosa
       if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(`Error \({response.status}:\){errData.details || response.statusText}`);
       }
 
-      // 4. Convertir respuesta a JSON
       const data = await response.json();
-
-      // 5. Devolver la respuesta de OpenAI
       return data.reply;
     } catch (error) {
-      // 6. Relanzar el error para que quien llame a chat() lo maneje
+      console.error('🔥 Error en OpenAIAssistant.chat():', error);
       throw error;
     }
   }
 
   /**
-   * Método que devuelve un generador asíncrono para streaming.
+   * Método que devuelve un generador asíncrono para streaming vía OpenRouter.
    *
    * @param {string} content - El mensaje del usuario (texto).
    * @param {Array} history - Historial de la conversación (opcional).
-   * @returns {AsyncGenerator<string>} - Generador que produce fragmentos.
-   * @throws {Error} - Si el backend falla.
+   * @returns {AsyncGenerator} - Generador que produce fragmentos.
    */
   async *chatStream(content, history = []) {
     try {
-      // 1. Enviar petición al backend con streaming
       const response = await fetch(`${API_BACKEND}/api/chatStream-openai`, {
         method: "POST",
         headers: {
@@ -95,39 +82,36 @@ export class OpenAIAssistant {
         body: JSON.stringify({ 
           message: content,
           history: history,
-          model: this.model // ← Envía el modelo al backend
+          model: this.model // Envía "openai/gpt-4o-mini" al backend
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(`Error \({response.status}:\){errData.details || response.statusText}`);
       }
 
-      // 2. Leer la respuesta como un stream de texto
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let chunkCount = 0;
 
-      // 3. Iterar sobre los fragmentos a medida que llegan
       while (true) {
         const { done, value } = await reader.read();
         if (done) {
-          console.log(`✅ Stream de OpenAI completado. Total fragmentos: ${chunkCount}`);
+          console.log(`✅ Stream de OpenAI (OpenRouter) completado. Total fragmentos: ${chunkCount}`);
           break;
         }
 
-        const chunk = decoder.decode(value);
+        const chunk = decoder.decode(value, { stream: true });
         chunkCount++;
-        console.log(`📥 Fragmento #${chunkCount} (OpenAI): ${chunk}`);
-        yield chunk; // ← Devuelve cada fragmento
+        yield chunk; 
       }
     } catch (error) {
-      console.error('🔥 Error en streaming de OpenAI:', error);
+      console.error('🔥 Error en streaming de OpenAIAssistant:', error);
       throw error;
     }
   }
 }
-
 // ============================================================
 // 📦 CLASE OpenAIAssistantDirect (VERSIÓN DIRECTA - SOLO PRUEBAS)
 // ============================================================

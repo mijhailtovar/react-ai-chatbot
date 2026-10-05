@@ -453,81 +453,96 @@ app.post('/api/chatStream-openrouter', async (req, res) => {
 });
 
 
-// Ruta para OpenAI (sin streaming)
+// ============================================================
+// 🌐 RUTA UNIFICADA PARA OPENAI (VÍA OPENROUTER)
+// ============================================================
 app.post('/api/chat-openai', async (req, res) => {
-    try {
-      const { message, history = [], model = "gpt-4o-mini" } = req.body;
-  
-      if (!message || message.trim() === '') {
-        return res.status(400).json({ error: 'El mensaje es obligatorio.' });
-      }
-  
-      console.log('📩 Mensaje recibido para OpenAI:', message);
-  
-      const OpenAI = require('openai');
-      const openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
-      });
-  
-      const response = await openai.chat.completions.create({
-        model: model,
-        messages: [...history, { content: message, role: "user" }],
-      });
-  
-      const reply = response.choices[0].message.content;
-      console.log('🤖 Respuesta de OpenAI obtenida.');
-      res.json({ reply });
-  
-    } catch (error) {
-      console.error('🔥 Error en OpenAI:', error);
-      res.status(500).json({ error: 'Error al procesar la solicitud' });
+  try {
+    const { message, history = [], model = "openai/gpt-4o-mini" } = req.body;
+
+    if (!message || message.trim() === '') {
+      return res.status(400).json({ error: 'El mensaje es obligatorio.' });
     }
-  });
-  
-  // Ruta para OpenAI con streaming
-  app.post('/api/chatStream-openai', async (req, res) => {
-    try {
-      const { message, history = [], model = "gpt-4o-mini" } = req.body;
-  
-      if (!message || message.trim() === '') {
-        return res.status(400).json({ error: 'El mensaje es obligatorio.' });
-      }
-  
-      console.log('📩 Mensaje recibido para OpenAI (stream):', message);
-  
-      const OpenAI = require('openai');
-      const openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
-      });
-  
-      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-      res.setHeader('Transfer-Encoding', 'chunked');
-      res.setHeader('Cache-Control', 'no-cache');
-  
-      const stream = await openai.chat.completions.create({
-        model: model,
-        messages: [...history, { content: message, role: "user" }],
-        stream: true,
-      });
-  
-      let chunkCount = 0;
-  
-      for await (const chunk of stream) {
-        const content = chunk.choices[0]?.delta?.content || '';
-        if (content) {
-          chunkCount++;
-          console.log(`📤 Fragmento #${chunkCount} (OpenAI): ${content}`);
-          res.write(content);
-        }
-      }
-  
-      console.log(`✅ Stream de OpenAI completado. Total fragmentos: ${chunkCount}`);
-      res.end();
-  
-    } catch (error) {
-      console.error('🔥 Error en streaming de OpenAI:', error);
-      res.status(500).json({ error: 'Error al procesar la solicitud' });
+
+    console.log('📩 Mensaje recibido para OpenAI (vía OpenRouter):', message);
+
+    const OpenAI = require('openai');
+    
+    // Usamos el cliente configurado hacia OpenRouter pero apuntando al modelo de OpenAI
+    const openai = new OpenAI({
+      baseURL: 'https://openrouter.ai/api/v1',
+      apiKey: process.env.OPENROUTER_API_KEY, // ¡Usas la misma llave que ya tienes!
+    });
+
+    const response = await openai.chat.completions.create({
+      model: model.startsWith('openai/') ? model : 'openai/' + model,
+      messages: [
+        { role: 'system', content: 'Eres un asistente útil, amigable y profesional.' },
+        ...history,
+        { content: message, role: "user" }
+      ],
+    });
+
+    const reply = response.choices[0].message.content;
+    console.log('🤖 Respuesta de OpenAI (vía OpenRouter) obtenida.');
+    res.json({ reply });
+
+  } catch (error) {
+    console.error('🔥 Error en OpenAI (OpenRouter):', error);
+    res.status(500).json({ error: 'Error al procesar la solicitud', details: error.message });
+  }
+});
+
+// ============================================================
+// 🌊 RUTA UNIFICADA PARA OPENAI CON STREAMING (VÍA OPENROUTER)
+// ============================================================
+app.post('/api/chatStream-openai', async (req, res) => {
+  try {
+    const { message, history = [], model = "openai/gpt-4o-mini" } = req.body;
+
+    if (!message || message.trim() === '') {
+      return res.status(400).json({ error: 'El mensaje es obligatorio.' });
     }
-  });
+
+    console.log('📩 Mensaje recibido para OpenAI (stream vía OpenRouter):', message);
+
+    const OpenAI = require('openai');
+    const openai = new OpenAI({
+      baseURL: 'https://openrouter.ai/api/v1',
+      apiKey: process.env.OPENROUTER_API_KEY,
+    });
+
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Transfer-Encoding', 'chunked');
+    res.setHeader('Cache-Control', 'no-cache');
+
+    const stream = await openai.chat.completions.create({
+      model: model.startsWith('openai/') ? model : 'openai/' + model,
+      messages: [
+        { role: 'system', content: 'Eres un asistente útil, amigable y profesional.' },
+        ...history,
+        { content: message, role: "user" }
+      ],
+      stream: true,
+    });
+
+    let chunkCount = 0;
+
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content || '';
+      if (content) {
+        chunkCount++;
+        res.write(content);
+      }
+    }
+
+    console.log(`✅ Stream de OpenAI (OpenRouter) completado. Total fragmentos: ${chunkCount}`);
+    res.end();
+
+  } catch (error) {
+    console.error('🔥 Error en streaming de OpenAI (OpenRouter):', error);
+    res.status(500).json({ error: 'Error al procesar la solicitud', details: error.message });
+  }
+});
 
 module.exports = app;

@@ -81,7 +81,7 @@ export function SelectorAsistente({ onAsistenteCambiar }) {
         </optgroup>
         
         <optgroup label="Open AI">
-          <option value="openai:gpt-4o-mini">gpt-4o-mini</option>
+          <option value="openai:GPT-4o-mini">GPT-4o-mini</option>
         </optgroup>
         
       </select>
